@@ -3,22 +3,17 @@ import numpy as np
 
 class ZagierInvolution3D(ThreeDScene):
     def construct(self):
-        ############################################
+
         # Parameters
-        ############################################
         p = 37  # prime of form 4k+1
         fixed_point = np.array([1, 1, (p - 1) / 4])
 
-        ############################################
         # Prime scale / label
-        ############################################
         prime_label = MathTex(rf"p = {p} \equiv 1 \pmod 4")
         prime_label.to_edge(UP)
         self.add_fixed_in_frame_mobjects(prime_label)
 
-        ############################################
         # Axes
-        ############################################
         axes = ThreeDAxes(
             x_range=[0, 8, 1],
             y_range=[0, 8, 1],
@@ -32,9 +27,7 @@ class ZagierInvolution3D(ThreeDScene):
         self.set_camera_orientation(phi=65 * DEGREES, theta=-90 * DEGREES)
         self.add(axes, labels)
 
-        ############################################
         # Continuous surface: x^2 + 4yz = p
-        ############################################
         def surface_func(u, v):
             x = u
             y = v
@@ -54,9 +47,7 @@ class ZagierInvolution3D(ThreeDScene):
         self.play(Create(surface), run_time=3)
         self.wait()
 
-        ############################################
         # Highlight central (middle) region
-        ############################################
         central_plane = Surface(
             surface_func,
             u_range=[1, 4],     # rough visual bounds for x
@@ -69,9 +60,7 @@ class ZagierInvolution3D(ThreeDScene):
         self.play(Transform(surface, central_plane), run_time=2)
         self.wait()
 
-        ############################################
         # Fixed point
-        ############################################
         fixed_dot = Dot3D(
             point=axes.c2p(*fixed_point),
             color=RED,
@@ -85,9 +74,7 @@ class ZagierInvolution3D(ThreeDScene):
         self.play(FadeIn(fixed_dot), Write(fixed_label))
         self.wait(2)
 
-        ############################################
         # Pick a specific point (continuous)
-        ############################################
         start_point = np.array([3.0, 2.0, (p - 9) / 8])
         start_dot = Dot3D(
             axes.c2p(*start_point),
@@ -98,9 +85,7 @@ class ZagierInvolution3D(ThreeDScene):
         self.play(FadeIn(start_dot))
         self.wait()
 
-        ############################################
         # Zagier involution (middle case)
-        ############################################
         def zagier_map(pt):
             x, y, z = pt
             if x < y - z:
@@ -127,9 +112,7 @@ class ZagierInvolution3D(ThreeDScene):
         self.play(GrowArrow(arrow1), FadeIn(image_dot), run_time=2)
         self.wait()
 
-        ############################################
         # Map back (involution)
-        ############################################
         back_point = zagier_map(image_point)
 
         arrow2 = Arrow3D(
@@ -141,9 +124,7 @@ class ZagierInvolution3D(ThreeDScene):
         self.play(GrowArrow(arrow2), run_time=2)
         self.wait(2)
 
-        ############################################
         # Snap to integer lattice points
-        ############################################
         self.play(FadeOut(surface), FadeOut(arrow1), FadeOut(arrow2))
         self.wait()
 
