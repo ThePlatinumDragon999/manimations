@@ -2,7 +2,11 @@
 # x^2 + 4yz = a prime of the form 4k + 1 (the prime is passed as a paramter)
 
 # It then applies the Zagier involution to each triple, and sorts them into a dictionary
-# by the case that each triple falls into
+# by the case that each triple falls into.
+
+# It prints all of the Pythagorean triples used, then prints the result of
+# applying the Zagier involution, including the case, and what the image of each
+# triple goes to.
 
 # Used for proving Fermat's two squares theorem, as Zagier showed that if there is a
 # fixed point in the involution (aka one of the triples maps to itself), 
