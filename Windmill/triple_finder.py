@@ -73,13 +73,12 @@ for triple in triple_list:
     case, image = zagier_involution(*triple)
 
     # For each case, add all Pythagorean triples that as input go to that case
-    grouped[case].append(triple)
+    # as well as their image
+    grouped[case].append((triple, image))
 
 # Iterate over each case
-# Print the input triple, then apply Zagier involution again 
-# and print the image (result)
-for case, triples in grouped.items():
+# Print the input triple and the image (result)
+for case, entries in grouped.items():
     print(f"\nCase: {case}")
-    for triple in triples:
-        image = zagier_involution(*triple)[1]
+    for triple, image in entries:
         print(f"  Triple: {triple} -> Image: {image}")
