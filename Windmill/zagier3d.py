@@ -1,16 +1,33 @@
 from manim import *
 import numpy as np
 
-class ZagierInvolution3D(ThreeDScene):
+# This is a class that shows the Zagier involution in action.
+# It generates a 3d surface, namely x^2 + 4yz = p (for a fixed prime of the form 4k + 1)
+
+# Even though the involution is only defined over the integers (aka lattice points in R^3),
+# I think this is useful for visualization.
+
+# The code then looks at pseudo-Pythagorean triples x, y, z that satisfy
+# x^2 + 4yz = p, and performs the Zagier involution on them.
+
+# Normally, you would inherit from Scene, but since this is 3D, you inherit
+# from the specific ThreeDScene class. Note that you still overwrite the constructor
+# as you would with a normal Scene subclass.
+class ZagierInv8(ThreeDScene):
     def construct(self):
 
-        # Parameters
-        p = 37  # prime of form 4k+1
+        # p should be a prime of the form 4k + 1
+        p = 37
+
+        # For a prime of the form 4k + 1, a fixed point of the Zagier
+        # involution is (1, 1, k).
+        # Note that if p = 4k + 1, then k = (p - 1) / 4
         fixed_point = np.array([1, 1, (p - 1) / 4])
 
-        # Prime scale / label
+        # Adds a title at the top of the screen giving the prime
         prime_label = MathTex(rf"p = {p} \equiv 1 \pmod 4")
         prime_label.to_edge(UP)
+        # Makes sure that camer rotates, this stays fixed in the frame
         self.add_fixed_in_frame_mobjects(prime_label)
 
         # Axes
@@ -24,41 +41,44 @@ class ZagierInvolution3D(ThreeDScene):
         )
         labels = axes.get_axis_labels(x_label="x", y_label="y", z_label="z")
 
-        self.set_camera_orientation(phi=65 * DEGREES, theta=-90 * DEGREES)
+        # Adds a camera to the scene. phi is the vertical viewing angle
+        # and theta is the horizontal viewing angle
+        # Phi is defined the same as in spherical coordinates.
+        # phi = 0 looks down on x-y plane vertically
+
+        # theta = 0 has +x pointing into the screen, and +y to the right
+        # Increasing theta rotates the xy-plane clockwise relative to +z (up)
+
+        # Best viewing angles I've found are phi = 65 and theta = 45
+        self.set_camera_orientation(phi=65 * DEGREES, theta=45 * DEGREES)
+
+        # Adds the axes and labels to the scene without animation
         self.add(axes, labels)
 
         # Continuous surface: x^2 + 4yz = p
+        # Note that p is fixed, and I define the surface that
+        # takes parameters x and y, then spits out the corresponding z value
         def surface_func(u, v):
             x = u
             y = v
             z = (p - x**2) / (4 * y)
+            # This converts mathematical coordinates to points on the screen
             return axes.c2p(x, y, z)
-
+        
+        # This tells Manim to samepl lots of (u,v) values and build a mesh
         surface = Surface(
             surface_func,
-            u_range=[0.5, 6],
-            v_range=[0.5, 6],
+            # u and v ranges are defined in math coordinates
+            u_range=[0.5, np.sqrt(p)],
+            v_range=[0.5, 8],
             resolution=(18, 18),
-            fill_opacity=0.35,
-            fill_color=BLUE,
+            fill_opacity=0.85,
+            fill_color=GREEN,
             stroke_width=0.5,
         )
 
-        self.play(Create(surface), run_time=3)
-        self.wait()
-
-        # Highlight central (middle) region
-        central_plane = Surface(
-            surface_func,
-            u_range=[1, 4],     # rough visual bounds for x
-            v_range=[1, 4],     # rough bounds for y
-            resolution=(12, 12),
-            fill_opacity=0.5,
-            fill_color=TEAL
-        )
-
-        self.play(Transform(surface, central_plane), run_time=2)
-        self.wait()
+        self.add(surface)
+        self.wait(2)
 
         # Fixed point
         fixed_dot = Dot3D(
@@ -109,7 +129,7 @@ class ZagierInvolution3D(ThreeDScene):
             color=ORANGE
         )
 
-        self.play(GrowArrow(arrow1), FadeIn(image_dot), run_time=2)
+        self.play(Create(arrow1), FadeIn(image_dot), run_time=2)
         self.wait()
 
         # Map back (involution)
@@ -121,7 +141,7 @@ class ZagierInvolution3D(ThreeDScene):
             color=YELLOW
         )
 
-        self.play(GrowArrow(arrow2), run_time=2)
+        self.play(Create(arrow2), run_time=2)
         self.wait(2)
 
         # Snap to integer lattice points

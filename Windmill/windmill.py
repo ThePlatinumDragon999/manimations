@@ -2,7 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-p = 37  # prime of form 4k+1
+# prime of form 4k+1
+p = 37
 
 # Generate all natural solutions (x, y, z)
 S = []
@@ -14,8 +15,8 @@ for y in range(1, p):  # positive integers
 
 S = np.array(S)
 
-# Define inv1
-def inv1_discrete(x, y, z):
+# Define the Zagier involution
+def zagier(x, y, z):
     if (2*y > x) and (z + x > y):
         return (2*y - x, y, z + x - y)  # central region
     elif (x > 2*y) and (z + x > y):
@@ -33,7 +34,7 @@ colors = {'central':'skyblue', 'left':'lightgreen', 'right':'orange'}
 
 for point in S:
     x, y, z = point
-    target = inv1_discrete(x, y, z)
+    target = zagier(x, y, z)
     if target:
         x_new, y_new, z_new = target
         # Determine region
