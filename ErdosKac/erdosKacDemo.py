@@ -74,18 +74,18 @@ class ErdosKac6(Scene):
             },
 
             y_axis_config={
-                "include_numbers": True,
-                "include_ticks": True,
-                "stroke_width": 1,
+                "include_numbers": False,
+                "include_ticks": False,
+                "stroke_width": 0,
             },
         )
 
         labels = axes.get_axis_labels(
             x_label="\\omega(n)",
-            y_label="Count"
+            y_label=""
         )
 
-                # Counter for N
+        # Counter for N
         N_tracker = ValueTracker(10000)
 
         N_label = Text("n = ")
