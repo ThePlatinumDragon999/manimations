@@ -13,7 +13,7 @@ def omega_sieve(N):
 
 
 # Precompute histograms
-sizes = list(range(10000, 1000001, 10000))
+sizes = [10_000, 50_000, 100_000, 500_000, 1_000_000, 5_000_000, 10_000_000]
 
 omega = omega_sieve(max(sizes))
 
@@ -26,7 +26,7 @@ for N in sizes:
     histograms[N] = counts
 
 
-class ErdosKac2(Scene):
+class ErdosKac6(Scene):
 
     def make_histogram(self, counts, axes):
 
@@ -74,17 +74,32 @@ class ErdosKac2(Scene):
             },
 
             y_axis_config={
-                "include_numbers": False,
-                "include_ticks": False,
-                "stroke_width": 0,
+                "include_numbers": True,
+                "include_ticks": True,
+                "stroke_width": 1,
             },
         )
 
         labels = axes.get_axis_labels(
             x_label="\\omega(n)",
-            y_label=""
+            y_label="Count"
         )
 
+                # Counter for N
+        N_tracker = ValueTracker(10000)
+
+        N_label = Text("n = ")
+        N_value = DecimalNumber(
+            10000,
+            num_decimal_places=0
+        )
+
+        counter = VGroup(N_label, N_value)
+        counter.arrange(UP)
+
+        N_value.add_updater(
+            lambda m: m.set_value(N_tracker.get_value())
+        )
 
         # Initial histogram
         bars = self.make_histogram(
@@ -95,7 +110,8 @@ class ErdosKac2(Scene):
         self.play(
             FadeIn(axes),
             FadeIn(labels),
-            FadeIn(bars)
+            FadeIn(bars),
+            FadeIn(counter)
         )
 
 
@@ -109,7 +125,10 @@ class ErdosKac2(Scene):
 
             self.play(
                 Transform(bars, new_bars),
-                run_time=0.05
+                N_tracker.animate.set_value(N),
+                run_time=1,
             )
+
+            self.wait(2)
 
         self.wait(2)
