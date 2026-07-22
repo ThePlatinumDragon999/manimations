@@ -10,25 +10,22 @@ import numpy as np
 # The code then looks at pseudo-Pythagorean triples x, y, z that satisfy
 # x^2 + 4yz = p, and performs the Zagier involution on them.
 
+# It then plots them on the graph. It also considers the fixed point, and colors it
+# a different color
+
 # Normally, you would inherit from Scene, but since this is 3D, you inherit
 # from the specific ThreeDScene class. Note that you still overwrite the constructor
 # as you would with a normal Scene subclass.
-class ZagierInv8(ThreeDScene):
+class ZagierInv1(ThreeDScene):
     def construct(self):
 
         # p should be a prime of the form 4k + 1
-        p = 37
+        p = 17
 
         # For a prime of the form 4k + 1, a fixed point of the Zagier
         # involution is (1, 1, k).
         # Note that if p = 4k + 1, then k = (p - 1) / 4
         fixed_point = np.array([1, 1, (p - 1) / 4])
-
-        # Adds a title at the top of the screen giving the prime
-        prime_label = MathTex(rf"p = {p} \equiv 1 \pmod 4")
-        prime_label.to_edge(UP)
-        # Makes sure that camer rotates, this stays fixed in the frame
-        self.add_fixed_in_frame_mobjects(prime_label)
 
         # Axes
         axes = ThreeDAxes(
@@ -78,34 +75,18 @@ class ZagierInv8(ThreeDScene):
         )
 
         self.add(surface)
-        self.wait(2)
 
         # Fixed point
         fixed_dot = Dot3D(
+            # Unpacks the fixed_point coordinate vector created earlier
             point=axes.c2p(*fixed_point),
             color=RED,
-            radius=0.08
-        )
-        fixed_label = MathTex(r"(1,1,\tfrac{p-1}{4})").next_to(
-            fixed_dot, UP
-        )
-        self.add_fixed_in_frame_mobjects(fixed_label)
-
-        self.play(FadeIn(fixed_dot), Write(fixed_label))
-        self.wait(2)
-
-        # Pick a specific point (continuous)
-        start_point = np.array([3.0, 2.0, (p - 9) / 8])
-        start_dot = Dot3D(
-            axes.c2p(*start_point),
-            color=YELLOW,
-            radius=0.07
+            radius=0.2
         )
 
-        self.play(FadeIn(start_dot))
-        self.wait()
+        self.add(fixed_dot)
 
-        # Zagier involution (middle case)
+        # Zagier involution
         def zagier_map(pt):
             x, y, z = pt
             if x < y - z:
@@ -115,39 +96,6 @@ class ZagierInv8(ThreeDScene):
             else:
                 return np.array([x - 2*y, x - y + z, y])
 
-        image_point = zagier_map(start_point)
-
-        image_dot = Dot3D(
-            axes.c2p(*image_point),
-            color=ORANGE,
-            radius=0.07
-        )
-
-        arrow1 = Arrow3D(
-            start=axes.c2p(*start_point),
-            end=axes.c2p(*image_point),
-            color=ORANGE
-        )
-
-        self.play(Create(arrow1), FadeIn(image_dot), run_time=2)
-        self.wait()
-
-        # Map back (involution)
-        back_point = zagier_map(image_point)
-
-        arrow2 = Arrow3D(
-            start=axes.c2p(*image_point),
-            end=axes.c2p(*back_point),
-            color=YELLOW
-        )
-
-        self.play(Create(arrow2), run_time=2)
-        self.wait(2)
-
-        # Snap to integer lattice points
-        self.play(FadeOut(surface), FadeOut(arrow1), FadeOut(arrow2))
-        self.wait()
-
         integer_dots = VGroup()
         for y in range(1, p):
             for x in range(1, p):
@@ -156,8 +104,8 @@ class ZagierInv8(ThreeDScene):
                     integer_dots.add(
                         Dot3D(
                             axes.c2p(x, y, z),
-                            radius=0.05,
-                            color=BLUE
+                            radius=0.1,
+                            color=ORANGE
                         )
                     )
 
