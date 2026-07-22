@@ -13,7 +13,8 @@ def omega_sieve(N):
 
 
 # Precompute histograms
-sizes = [10_000, 50_000, 100_000, 500_000, 1_000_000, 5_000_000, 10_000_000]
+sizes = [10_000, 50_000, 100_000, 500_000, 1_000_000, 5_000_000, 
+         10_000_000, 50_000_000, 100_000_000]
 
 omega = omega_sieve(max(sizes))
 
@@ -26,7 +27,7 @@ for N in sizes:
     histograms[N] = counts
 
 
-class ErdosKac6(Scene):
+class ErdosKac8(Scene):
 
     def make_histogram(self, counts, axes):
 
@@ -95,7 +96,8 @@ class ErdosKac6(Scene):
         )
 
         counter = VGroup(N_label, N_value)
-        counter.arrange(UP)
+        counter.arrange(RIGHT, buff=0.15)
+        counter.to_edge(UP)
 
         N_value.add_updater(
             lambda m: m.set_value(N_tracker.get_value())
