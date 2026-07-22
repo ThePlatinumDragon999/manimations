@@ -62,7 +62,7 @@ class ZagierInv1(ThreeDScene):
             # This converts mathematical coordinates to points on the screen
             return axes.c2p(x, y, z)
         
-        # This tells Manim to samepl lots of (u,v) values and build a mesh
+        # This tells Manim to sample lots of (u,v) values and build a mesh
         surface = Surface(
             surface_func,
             # u and v ranges are defined in math coordinates
@@ -96,6 +96,7 @@ class ZagierInv1(ThreeDScene):
             else:
                 return np.array([x - 2*y, x - y + z, y])
 
+        # Create a vertex group of all of the psuedo-Pythagorean triples
         integer_dots = VGroup()
         for y in range(1, p):
             for x in range(1, p):
@@ -109,5 +110,6 @@ class ZagierInv1(ThreeDScene):
                         )
                     )
 
+        # Fade in all of the vertex dots
         self.play(LaggedStartMap(FadeIn, integer_dots, lag_ratio=0.02))
         self.wait(3)
