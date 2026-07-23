@@ -1,6 +1,11 @@
 import numpy as np
 from manim import *
 
+BAR_COLORS = [
+    '#87ff78',
+    '#b00b69',
+    '#9ab5ff'
+]
 
 def omega_sieve(N):
     omega = np.zeros(N + 1, dtype=int)
@@ -14,7 +19,7 @@ def omega_sieve(N):
 
 # Precompute histograms
 sizes = [10_000, 50_000, 100_000, 500_000, 1_000_000, 5_000_000, 
-         10_000_000, 50_000_000, 100_000_000]
+         10_000_000, 50_000_000, 100_000_000, 500_000_000, 1_000_000_000]
 
 omega = omega_sieve(max(sizes))
 
@@ -25,19 +30,20 @@ for N in sizes:
     counts = np.bincount(values)
     counts = counts / len(values)   # normalize to probabilities
     histograms[N] = counts
+    print(f"Finished histogram (size {N})")
 
 
-class ErdosKac8(Scene):
+class ErdosKac9(Scene):
 
-    def make_histogram(self, counts, axes):
-
+    def make_histogram(self, counts, axes, max_len):
         bars = VGroup()
 
-        for k, c in enumerate(counts):
+        # Pad counts with zeros so every histogram has identical length
+        padded_counts = np.pad(counts, (0, max_len - len(counts)), 'constant')
 
-            # Convert data coordinates into screen coordinates
+        for k, c in enumerate(padded_counts):
             left = axes.c2p(k, 0)
-            right = axes.c2p(k + 0.8, c)
+            right = axes.c2p(k + 0.8, c if c > 0 else 0.0001) # Avoid zero height issues if needed
 
             width = right[0] - left[0]
             height = right[1] - left[1]
@@ -47,21 +53,19 @@ class ErdosKac8(Scene):
                 height=height,
                 fill_opacity=1,
                 stroke_width=0,
-                color=BLUE,
+                color=BAR_COLORS[k % len(BAR_COLORS)],
             )
 
             bar.align_to(left, DL)
-
             bars.add(bar)
 
         return bars
 
 
     def construct(self):
-
-        # Fixed axes
         xmax = max(len(c) for c in histograms.values()) - 1
         ymax = max(max(c) for c in histograms.values())
+        max_bars_len = xmax + 1
 
         axes = Axes(
             x_range=[0, xmax + 1, 1],
@@ -69,11 +73,7 @@ class ErdosKac8(Scene):
             x_length=8,
             y_length=5,
             tips=False,
-
-            x_axis_config={
-                "include_numbers": True,
-            },
-
+            x_axis_config={"include_numbers": True},
             y_axis_config={
                 "include_numbers": False,
                 "include_ticks": False,
@@ -81,33 +81,20 @@ class ErdosKac8(Scene):
             },
         )
 
-        labels = axes.get_axis_labels(
-            x_label="\\omega(n)",
-            y_label=""
-        )
+        labels = axes.get_axis_labels(x_label="\\omega(n)", y_label="")
 
-        # Counter for N
-        N_tracker = ValueTracker(10000)
-
+        N_tracker = ValueTracker(sizes[0])
         N_label = Text("n = ")
-        N_value = DecimalNumber(
-            10000,
-            num_decimal_places=0
-        )
+        N_value = DecimalNumber(sizes[0], num_decimal_places=0)
 
         counter = VGroup(N_label, N_value)
         counter.arrange(RIGHT, buff=0.15)
         counter.to_edge(UP)
 
-        N_value.add_updater(
-            lambda m: m.set_value(N_tracker.get_value())
-        )
+        N_value.add_updater(lambda m: m.set_value(N_tracker.get_value()))
 
         # Initial histogram
-        bars = self.make_histogram(
-            histograms[10000],
-            axes
-        )
+        bars = self.make_histogram(histograms[sizes[0]], axes, max_bars_len)
 
         self.play(
             FadeIn(axes),
@@ -116,14 +103,9 @@ class ErdosKac8(Scene):
             FadeIn(counter)
         )
 
-
-        # Animate growing N
+        # Animate growing N smoothly without merging artifacts
         for N in sizes[1:]:
-
-            new_bars = self.make_histogram(
-                histograms[N],
-                axes
-            )
+            new_bars = self.make_histogram(histograms[N], axes, max_bars_len)
 
             self.play(
                 Transform(bars, new_bars),
