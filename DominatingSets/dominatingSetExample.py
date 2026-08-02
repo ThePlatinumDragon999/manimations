@@ -1,43 +1,31 @@
 from dominatingSetCalc import minimum_dominating_set
 from manim import *
+import graphConfigs
 
-class DominatingSet1(Scene):
+class DominatingSet4(Scene):
     def construct(self):
-        vertices = [0,1,2,3,4]
 
-        edges = [
-            (0,1),
-            (1,2),
-            (2,3),
-            (0,3),
-            (3,4),
-            (2,4),
-        ]
+        config = graphConfigs.grid_graph_4x4()
 
-        graph = Graph(
-            vertices, 
-            edges)
+        graph = config.get_graph()
 
-        g = [[] for _ in vertices]
-
-        for u, v in edges:
-            g[u].append(v)
-            g[v].append(u)
+        g = config.get_adjacency_list()
 
         S = minimum_dominating_set(g)
 
         # Actal Manim code now
-        self.play(FadeIn(graph))
+        self.add(graph)
 
         self.play(
-            AnimationGroup(
+            LaggedStart(
                 *[
-                graph.vertices[v].animate.set_fill("#b00b69")
-                for v in S
-                ]
+                    graph.vertices[v].animate
+                        .set_fill("#b00b69")
+                        .scale(1.5)
+                    for v in S
+                ],
+                lag_ratio=0.2
             )
         )
 
         self.wait(2)
-
-        self.play(FadeOut(graph))
