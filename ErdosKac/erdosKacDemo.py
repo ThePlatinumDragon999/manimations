@@ -18,7 +18,7 @@ def omega_sieve(N):
 
 
 # Precompute histograms
-sizes = [10_000, 50_000, 100_000, 500_000, 1_000_000, 5_000_000, 
+sizes = [1_000, 10_000, 50_000, 100_000, 500_000, 1_000_000, 5_000_000, 
          10_000_000, 50_000_000, 100_000_000, 500_000_000, 1_000_000_000]
 
 omega = omega_sieve(max(sizes))
@@ -28,12 +28,13 @@ histograms = {}
 for N in sizes:
     values = omega[2:N+1]
     counts = np.bincount(values)
-    counts = counts / len(values)   # normalize to probabilities
+    # normalize to probabilities
+    counts = counts / len(values)
     histograms[N] = counts
     print(f"Finished histogram (size {N})")
 
 
-class ErdosKac9(Scene):
+class ErdosKac12(Scene):
 
     def make_histogram(self, counts, axes, max_len):
         bars = VGroup()
@@ -73,11 +74,14 @@ class ErdosKac9(Scene):
             x_length=8,
             y_length=5,
             tips=False,
-            x_axis_config={"include_numbers": True},
+            x_axis_config={
+                "include_numbers": True,
+                "stroke_width": 4
+            },
             y_axis_config={
                 "include_numbers": False,
                 "include_ticks": False,
-                "stroke_width": 0,
+                "stroke_width": 4,
             },
         )
 
@@ -110,9 +114,7 @@ class ErdosKac9(Scene):
             self.play(
                 Transform(bars, new_bars),
                 N_tracker.animate.set_value(N),
-                run_time=1,
+                run_time=1.5,
             )
-
-            self.wait(2)
 
         self.wait(2)
