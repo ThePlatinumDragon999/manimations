@@ -28,24 +28,26 @@ class GraphConfig:
 
         return g
 
-def cycle_graph_5():
-    vertices = [0,1,2,3,4]
+def cycle_graph(n, radius=2):
 
-    edges = [
-        (0,1),
-        (1,2),
-        (2,3),
-        (3,4),
-        (4,0),
-    ]
+    vertices = list(range(n))
 
-    layout = {
-        0: UP*2,
-        1: RIGHT*2,
-        2: RIGHT*2+DOWN*2,
-        3: LEFT*2+DOWN*2,
-        4: LEFT*2,
-    }
+    edges = []
+
+    for i in range(n):
+        edges.append(
+            (i, (i+1) % n)
+        )
+
+    layout = {}
+
+    for i in range(n):
+        theta = 2 * PI * i / n
+
+        layout[i] = (
+            radius * np.cos(theta) * RIGHT +
+            radius * np.sin(theta) * UP
+        )
 
     return GraphConfig(vertices, edges, layout)
 
@@ -80,5 +82,25 @@ def grid_graph(rows, cols):
                 (col - (cols-1)/2) * RIGHT +
                 ((rows-1)/2 - row) * UP
             )
+
+    return GraphConfig(vertices, edges, layout)
+
+def path_graph(n, spacing=1):
+
+    vertices = list(range(n))
+
+    edges = []
+
+    for i in range(n-1):
+        edges.append(
+            (i, i+1)
+        )
+
+    layout = {}
+
+    for i in range(n):
+        layout[i] = (
+            (i - (n-1)/2) * spacing * RIGHT
+        )
 
     return GraphConfig(vertices, edges, layout)
