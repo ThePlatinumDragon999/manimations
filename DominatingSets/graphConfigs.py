@@ -148,3 +148,31 @@ def petersen_graph(radius=3):
         )
 
     return GraphConfig(vertices, edges, layout)
+
+def star_graph(n, radius=2):
+
+    vertices = list(range(n))
+
+    edges = []
+
+    # Connect every vertex to center
+    for i in range(1, n):
+        edges.append(
+            (0, i)
+        )
+
+    layout = {}
+
+    # Center
+    layout[0] = ORIGIN
+
+    # Leaves around a circle
+    for i in range(1, n):
+        theta = 2*PI*(i-1)/(n-1)
+
+        layout[i] = (
+            radius*np.cos(theta)*RIGHT +
+            radius*np.sin(theta)*UP
+        )
+
+    return GraphConfig(vertices, edges, layout)
