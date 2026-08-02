@@ -2,10 +2,10 @@ from dominatingSetCalc import minimum_dominating_set
 from manim import *
 import graphConfigs
 
-class DominatingSet4(Scene):
+class DominatingSet1(Scene):
     def construct(self):
 
-        config = graphConfigs.grid_graph_4x4()
+        config = graphConfigs.grid_graph(7, 7)
 
         graph = config.get_graph()
 

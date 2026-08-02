@@ -49,66 +49,36 @@ def cycle_graph_5():
 
     return GraphConfig(vertices, edges, layout)
 
-def grid_graph_3x3():
+def grid_graph(rows, cols):
 
-    vertices = list(range(9))
-
-    edges = []
-
-    # horizontal edges
-    for row in range(3):
-        for col in range(2):
-            edges.append(
-                (row*3+col, row*3+col+1)
-            )
-
-    # vertical edges
-    for row in range(2):
-        for col in range(3):
-            edges.append(
-                (row*3+col, (row+1)*3+col)
-            )
-
-    layout = {}
-
-    for row in range(3):
-        for col in range(3):
-            vertex = row*3+col
-            layout[vertex] = (
-                (col-1)*RIGHT +
-                (1-row)*UP
-            )
-
-    return GraphConfig(vertices, edges, layout)
-
-def grid_graph_4x4():
-
-    vertices = list(range(16))
+    vertices = list(range(rows * cols))
 
     edges = []
 
     # horizontal edges
-    for row in range(4):
-        for col in range(3):
+    for row in range(rows):
+        for col in range(cols - 1):
             edges.append(
-                (row*4+col, row*4+col+1)
+                (row * cols + col,
+                 row * cols + col + 1)
             )
 
     # vertical edges
-    for row in range(3):
-        for col in range(4):
+    for row in range(rows - 1):
+        for col in range(cols):
             edges.append(
-                (row*4+col, (row+1)*4+col)
+                (row * cols + col,
+                 (row + 1) * cols + col)
             )
 
     layout = {}
 
-    for row in range(4):
-        for col in range(4):
-            vertex = row*4+col
+    for row in range(rows):
+        for col in range(cols):
+            vertex = row * cols + col
             layout[vertex] = (
-                (col-1)*RIGHT +
-                (1-row)*UP
+                (col - (cols-1)/2) * RIGHT +
+                ((rows-1)/2 - row) * UP
             )
 
     return GraphConfig(vertices, edges, layout)
