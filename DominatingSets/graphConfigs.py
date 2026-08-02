@@ -104,3 +104,47 @@ def path_graph(n, spacing=1):
         )
 
     return GraphConfig(vertices, edges, layout)
+
+def petersen_graph(radius=3):
+
+    vertices = list(range(10))
+
+    edges = []
+
+    # Outer pentagon
+    for i in range(5):
+        edges.append(
+            (i, (i+1) % 5)
+        )
+
+    # Inner pentagram
+    for i in range(5):
+        edges.append(
+            (i+5, ((i+2) % 5)+5)
+        )
+
+    # Spokes
+    for i in range(5):
+        edges.append(
+            (i, i+5)
+        )
+
+    layout = {}
+
+    # Outer pentagon
+    for i in range(5):
+        theta = 2*PI*i/5
+        layout[i] = (
+            radius*np.cos(theta)*RIGHT +
+            radius*np.sin(theta)*UP
+        )
+
+    # Inner pentagram
+    for i in range(5):
+        theta = 2*PI*i/5 + PI/5
+        layout[i+5] = (
+            0.45*radius*np.cos(theta)*RIGHT +
+            0.45*radius*np.sin(theta)*UP
+        )
+
+    return GraphConfig(vertices, edges, layout)

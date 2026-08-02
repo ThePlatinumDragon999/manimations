@@ -5,7 +5,7 @@ import graphConfigs
 class DominatingSet3(Scene):
     def construct(self):
 
-        config = graphConfigs.path_graph(13)
+        config = graphConfigs.petersen_graph()
 
         graph = config.get_graph()
 
