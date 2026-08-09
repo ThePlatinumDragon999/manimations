@@ -176,3 +176,29 @@ def star_graph(n, radius=2):
         )
 
     return GraphConfig(vertices, edges, layout)
+
+import numpy as np
+
+def complete_graph(n, radius=2):
+
+    vertices = list(range(n))
+
+    edges = []
+
+    # Connect every pair of vertices
+    for i in range(n):
+        for j in range(i+1, n):
+            edges.append((i, j))
+
+    # Place vertices on a circle
+    layout = {}
+
+    for i in range(n):
+        theta = 2 * PI * i / n + PI/2  # start at top
+
+        layout[i] = (
+            radius * np.cos(theta) * RIGHT +
+            radius * np.sin(theta) * UP
+        )
+
+    return GraphConfig(vertices, edges, layout)
