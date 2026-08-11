@@ -16,7 +16,7 @@ import numpy as np
 # Normally, you would inherit from Scene, but since this is 3D, you inherit
 # from the specific ThreeDScene class. Note that you still overwrite the constructor
 # as you would with a normal Scene subclass.
-class ZagierInv1(ThreeDScene):
+class ZagierInv2(ThreeDScene):
     def construct(self):
 
         # p should be a prime of the form 4k + 1
@@ -100,8 +100,11 @@ class ZagierInv1(ThreeDScene):
         integer_dots = VGroup()
         for y in range(1, p):
             for x in range(1, p):
-                z = (p - x**2) / (4 * y)
-                if z.is_integer() and z > 0:
+                numerator = p - x**2
+                denominator = 4 * y
+
+                if numerator > 0 and numerator % denominator == 0:
+                    z = numerator // denominator
                     integer_dots.add(
                         Dot3D(
                             axes.c2p(x, y, z),
