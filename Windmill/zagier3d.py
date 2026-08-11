@@ -16,7 +16,7 @@ import numpy as np
 # Normally, you would inherit from Scene, but since this is 3D, you inherit
 # from the specific ThreeDScene class. Note that you still overwrite the constructor
 # as you would with a normal Scene subclass.
-class ZagierInv3(ThreeDScene):
+class ZagierInv4(ThreeDScene):
     def construct(self):
 
         # p should be a prime of the form 4k + 1
@@ -36,6 +36,7 @@ class ZagierInv3(ThreeDScene):
             y_length=6,
             z_length=4
         )
+
         labels = axes.get_axis_labels(x_label="x", y_label="y", z_label="z")
 
         # Adds a camera to the scene. phi is the vertical viewing angle
@@ -89,12 +90,13 @@ class ZagierInv3(ThreeDScene):
         # Zagier involution
         def zagier_map(pt):
             x, y, z = pt
+
             if x < y - z:
-                return np.array([x + 2*z, z, y - x - z])
+                return (x + 2*z, z, y - x - z)
             elif y - z <= x <= 2*y:
-                return np.array([2*y - x, y, x - y + z])
+                return (2*y - x, y, x - y + z)
             else:
-                return np.array([x - 2*y, x - y + z, y])
+                return (x - 2*y, x - y + z, y)
 
         # Create a vertex group of all of the psuedo-Pythagorean triples
         integer_dots = VGroup()
