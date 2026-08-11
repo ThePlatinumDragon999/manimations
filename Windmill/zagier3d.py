@@ -16,7 +16,7 @@ import numpy as np
 # Normally, you would inherit from Scene, but since this is 3D, you inherit
 # from the specific ThreeDScene class. Note that you still overwrite the constructor
 # as you would with a normal Scene subclass.
-class ZagierInv2(ThreeDScene):
+class ZagierInv3(ThreeDScene):
     def construct(self):
 
         # p should be a prime of the form 4k + 1
@@ -98,6 +98,8 @@ class ZagierInv2(ThreeDScene):
 
         # Create a vertex group of all of the psuedo-Pythagorean triples
         integer_dots = VGroup()
+        arrows = VGroup()
+
         for y in range(1, p):
             for x in range(1, p):
                 numerator = p - x**2
@@ -105,14 +107,32 @@ class ZagierInv2(ThreeDScene):
 
                 if numerator > 0 and numerator % denominator == 0:
                     z = numerator // denominator
+
+                    point = np.array([x, y, z])
+                    image = zagier_map(point)
+
                     integer_dots.add(
                         Dot3D(
-                            axes.c2p(x, y, z),
+                            axes.c2p(*point),
                             radius=0.1,
                             color=ORANGE
                         )
                     )
 
+                    # Don't draw an arrw for the fixed point
+                    if not np.array_equal(point, image):
+                        start = axes.c2p(*point)
+                        end = axes.c2p(*image)
+
+                        arrows.add(
+                            Arrow3D(
+                                start=start,
+                                end=end,
+                                color=YELLOW
+                            )
+                        )
+
         # Fade in all of the vertex dots
         self.play(LaggedStartMap(FadeIn, integer_dots, lag_ratio=0.02))
+        self.play(LaggedStartMap(FadeIn, arrows, lag_ratio=0.02))
         self.wait(3)
