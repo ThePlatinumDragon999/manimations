@@ -63,9 +63,14 @@ class Napoleon1(Scene):
 
         triangle = Polygon(
             A, B, C,
-            stroke_width=1,
+            stroke_width=10,
             color="white",
-            
+        )
+
+        triangle = VGroup(
+            Line(A, B, stroke_width=10).set_cap_style(CapStyleType.ROUND),
+            Line(A, C, stroke_width=10).set_cap_style(CapStyleType.ROUND),
+            Line(B, C, stroke_width=10).set_cap_style(CapStyleType.ROUND)
         )
 
         self.play(FadeIn(triangle))
@@ -77,22 +82,19 @@ class Napoleon1(Scene):
         E = equilateral_on_side(B, C, A)
         F = equilateral_on_side(C, A, B)
 
-        equilateral_1 = Polygon(
-            A, B, D,
-            stroke_width=10,
-            color="white"
+        equilateral_1 = VGroup(
+            Line(B, D, stroke_width=10).set_cap_style(CapStyleType.ROUND),
+            Line(D, A, stroke_width=10).set_cap_style(CapStyleType.ROUND)
         )
 
-        equilateral_2 = Polygon(
-            B, C, E,
-            stroke_width=10,
-            color="white"
+        equilateral_2 = VGroup(
+            Line(C, E, stroke_width=10).set_cap_style(CapStyleType.ROUND),
+            Line(E, B, stroke_width=10).set_cap_style(CapStyleType.ROUND)
         )
 
-        equilateral_3 = Polygon(
-            C, A, F,
-            stroke_width=10,
-            color="white"
+        equilateral_3 = VGroup(
+            Line(A, F, stroke_width=10).set_cap_style(CapStyleType.ROUND),
+            Line(F, C, stroke_width=10).set_cap_style(CapStyleType.ROUND)
         )
 
         # First side
@@ -118,3 +120,19 @@ class Napoleon1(Scene):
         )
 
         self.wait(1)
+
+        # Centroids
+        G1 = (A + B + D) / 3
+        G2 = (B + C + E) / 3
+        G3 = (A + C + F) / 3
+
+        centroid_dots = VGroup(
+            Dot(G1, radius=0.16, color="#B00B69"),
+            Dot(G2, radius=0.16, color="#87FF78"),
+            Dot(G3, radius=0.16, color="#9AB5FF")
+        )
+
+        self.play(
+            FadeIn(centroid_dots),
+            run_time=1
+        )
