@@ -80,11 +80,37 @@ class TriangleCenters(Scene):
 
         triangles = {}
         dots = {}
+        colors = {
+            Center.CENTROID: "#B00B69",
+            Center.CIRCUMCENTER: "#87FF78",
+            Center.INCENTER: "#9AB5FF",
+            Center.ORTHOCENTER: "#C5C100"
+        }
+
         labels = {
-            Center.CENTROID: Text("Centroid", font="OpenDyslexic").scale(0.5),
-            Center.CIRCUMCENTER: Text("Circumcenter", font="OpenDyslexic").scale(0.5),
-            Center.INCENTER: Text("Incenter", font="OpenDyslexic").scale(0.5),
-            Center.ORTHOCENTER: Text("Orthocenter", font="OpenDyslexic").scale(0.5)
+            Center.CENTROID: Text(
+                "Centroid", 
+                font="OpenDyslexic",
+                color=colors[Center.CENTROID]
+            ).scale(0.5),
+
+            Center.CIRCUMCENTER: Text(
+                "Circumcenter", 
+                font="OpenDyslexic",
+                color=colors[Center.CIRCUMCENTER]
+            ).scale(0.5),
+
+            Center.INCENTER: Text(
+                "Incenter", 
+                font="OpenDyslexic",
+                color=colors[Center.INCENTER]
+            ).scale(0.5),
+
+            Center.ORTHOCENTER: Text(
+                "Orthocenter", 
+                font="OpenDyslexic",
+                color=colors[Center.ORTHOCENTER]
+            ).scale(0.5)
         }
 
         # Now actually create the triangles
@@ -98,7 +124,7 @@ class TriangleCenters(Scene):
                 b,
                 c,
                 stroke_width = 10,
-                color = "white"
+                color = colors[center_type]
             )
 
             # Appropriate center
@@ -110,7 +136,9 @@ class TriangleCenters(Scene):
             )
 
             # Center dot
-            dots[center_type] = Dot(center)
+            dots[center_type] = Dot(
+                center,
+                color=colors[center_type])
 
             labels[center_type].move_to(position + DOWN * 1.7)
 
@@ -124,7 +152,7 @@ class TriangleCenters(Scene):
         )
 
         self.play(
-            *[Write(labels[center_type]) for center_type in center_types]
+            *[FadeIn(labels[center_type]) for center_type in center_types]
         )
 
         self.wait(1)
@@ -162,7 +190,7 @@ class TriangleCenters(Scene):
                 c = C_new + position
 
                 new_triangles[center_type] = \
-                    Polygon(a, b, c, stroke_width=10, color="white")
+                    Polygon(a, b, c, stroke_width=10, color=colors[center_type])
 
                 new_centers[center_type] = self.get_center(
                     center_type,
@@ -229,7 +257,7 @@ class TriangleCenters(Scene):
             *[
                 dots[center_type].animate.move_to(
                     new_centers[center_type]
-                )
+                ).set_color("white")
                 for center_type in center_types
             ],
 
