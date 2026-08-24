@@ -2,41 +2,38 @@ from manim import *
 import numpy as np
 
 class TriangleCenters(Scene):
-    def get_centers(self, A, B, C):
-            # Centroid
-            centroid = (A + B + C) / 3
-    
-            # Circumcenter
-            M = np.array([
-                2 * (B - A)[:2],
-                2 * (C - A)[:2]
-            ])
-            
-            rhs = np.array([
-                np.dot(B, B) - np.dot(A, A),
-                np.dot(C, C) - np.dot(A, A)
-            ])
-            
-            circumcenter_2d = np.linalg.solve(M, rhs)
-            circumcenter = np.array([
-                circumcenter_2d[0],
-                circumcenter_2d[1],
-                0
-            ])
-    
-            # Incenter
-            side_a = np.linalg.norm(B - C)
-            side_b = np.linalg.norm(A - C)
-            side_c = np.linalg.norm(A - B)
-            
-            incenter = (
-                side_a * A + side_b * B + side_c * C
-            ) / (side_a + side_b + side_c)
-            
-            # Orthocenter
-            orthocenter = A + B + C - 2 * circumcenter
-            
-            return centroid, circumcenter, incenter, orthocenter
+    def get_centroid(self, A, B, C):
+         return (A + B + C) / 3
+
+    def get_circumcenter(self, A, B, C):
+        M = np.array([
+            2 * (B - A)[:2],
+            2 * (C - A)[:2]
+        ])
+                     
+        rhs = np.array([
+            np.dot(B, B) - np.dot(A, A),
+            np.dot(C, C) - np.dot(A, A)
+        ])
+
+        return np.array([
+             *np.linalg.solve(M, rhs),
+             0
+        ])
+
+    def get_incenter(self, A, B, C):
+         side_a = np.linalg.norm(B - C)
+         side_b = np.linalg.norm(A - C)
+         side_c = np.linalg.norm(A - B)
+
+         return (
+              side_a * A +
+              side_b * B +
+              side_c * C
+         ) / (side_a + side_b + side_c)
+
+    def get_orthocenter(self, A, B, C):
+         return A + B + C - 2 * self.get_circumcenter(A, B, C)
     
     def construct(self):
 
@@ -74,13 +71,11 @@ class TriangleCenters(Scene):
             b = B + position
             c = C + position
 
-            centroid, circumcenter, incenter, orthocenter = self.get_centers(a, b, c)
-
             center_dots.append([
-                Dot(centroid),
-                Dot(circumcenter),
-                Dot(incenter),
-                Dot(orthocenter)
+                Dot(self.get_centroid(a, b, c)),
+                Dot(self.get_circumcenter(a, b, c)),
+                Dot(self.get_incenter(a, b, c)),
+                Dot(self.get_orthocenter(a, b, c))
             ])
 
         # Pick a center for each triangle
@@ -120,44 +115,51 @@ class TriangleCenters(Scene):
         # TODO: Fix these triangles. 
         # They don't update with the correct centers / positions
 
-        # First new triangle to change
-        A1 = np.array([-0.5, -1.0, 0])
-        B1 = np.array([0.5, -1.0, 0])
-        C1 = np.array([0.3, 1.5, 0])
-        new_tri_centers = []
-
-        new_triangles = []
-
-        for position in posCenters:
-            a = A1 + position
-            b = B1 + position
-            c = C1 + position
-
-            tri_centers = self.get_centers(a, b, c)
-
-            new_tri_centers.append(tri_centers)
-
-            new_triangles.append(
-                Polygon(a, b, c, stroke_width=10, color="white")
+        triangle_shapes = [
+            # Triangle 1
+            (
+                np.array([-0.5, -1.0, 0]),
+                np.array([0.5, -1.0, 0]),
+                np.array([0.3, 1.5, 0])
             )
-             
+        ]
+
+        for A_new, B_new, C_new in triangle_shapes:
+            new_triangles = []
+            new_centers = []
+
+            for position in posCenters:
+                a = A_new + position
+                b = B_new + position
+                c = C_new + position
+
+                new_triangles.append(
+                    Polygon(a, b, c, stroke_width=10, color="white")
+                )
+
+                new_centers.append([
+                    self.get_centroid(a, b, c),
+                    self.get_circumcenter(a, b, c),
+                    self.get_incenter(a, b, c),
+                    self.get_orthocenter(a, b, c)
+                ])
 
         self.play(
             # Triangle 1
             triangles[0].animate.become(new_triangles[0]),
-            dots[0].animate.move_to(new_tri_centers[0][0]),
+            dots[0].animate.move_to(new_centers[0][0]),
 
             # Triangle 2
             triangles[1].animate.become(new_triangles[1]),
-            dots[1].animate.move_to(new_tri_centers[1][1]),
+            dots[1].animate.move_to(new_centers[1][1]),
 
             # Triangle 3
             triangles[2].animate.become(new_triangles[2]),
-            dots[2].animate.move_to(new_tri_centers[2][2]),
+            dots[2].animate.move_to(new_centers[2][2]),
 
             # Triangle 4
             triangles[3].animate.become(new_triangles[3]),
-            dots[3].animate.move_to(new_tri_centers[3][3]),
+            dots[3].animate.move_to(new_centers[3][3]),
 
             run_time=3,
         )
