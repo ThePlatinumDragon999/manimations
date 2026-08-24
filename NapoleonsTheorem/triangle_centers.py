@@ -9,6 +9,11 @@ class Center(Enum):
     ORTHOCENTER = 4
 
 class TriangleCenters(Scene):
+
+    GUIDE_STROKE_WIDTH = 10
+    GUIDE_COLOR = "#808080"
+    GUIDE_OPACITY = 0.7
+
     def get_centroid(self, A, B, C):
          return (A + B + C) / 3
 
@@ -54,8 +59,133 @@ class TriangleCenters(Scene):
 
         elif center_type == Center.ORTHOCENTER:
             return self.get_orthocenter(A, B, C)
+
+    def get_centroid_guides(self, A, B, C):
+        midpoint_BC = (B + C) / 2
+        midpoint_AC = (A + C) / 2
+        midpoint_AB = (A + B) / 2
+
+        return VGroup(
+            DashedLine(A, midpoint_BC,
+                stroke_width=self.GUIDE_STROKE_WIDTH,
+                color=self.GUIDE_COLOR,
+                stroke_opacity=self.GUIDE_OPACITY),
+            DashedLine(B, midpoint_AC,
+                stroke_width=self.GUIDE_STROKE_WIDTH,
+                color=self.GUIDE_COLOR,
+                stroke_opacity=self.GUIDE_OPACITY),
+            DashedLine(C, midpoint_AB,
+                stroke_width=self.GUIDE_STROKE_WIDTH,
+                color=self.GUIDE_COLOR,
+                stroke_opacity=self.GUIDE_OPACITY)
+        )
+
+    def get_circumcenter_guides(self, A, B, C):
+        center = self.get_circumcenter(A, B, C)
+        radius = np.linalg.norm(center - A)
+
+        circle = Circle(
+            radius=radius,
+            color=self.GUIDE_COLOR,
+            stroke_width=self.GUIDE_STROKE_WIDTH,
+            stroke_opacity=self.GUIDE_OPACITY
+        ).move_to(center)
+
+        return DashedVMobject(
+            circle,
+            num_dashes=32
+        )
+
+    def get_incenter_guides(self, A, B, C):
+        center = self.get_incenter(A, B, C)
+
+        radius = np.linalg.norm(
+            np.cross(B - A, center - A)
+        ) / np.linalg.norm(B - A)
+
+        circle = Circle(
+            radius=radius,
+            color=self.GUIDE_COLOR,
+            stroke_width=self.GUIDE_STROKE_WIDTH,
+            stroke_opacity=self.GUIDE_OPACITY
+        ).move_to(center)
+
+        return DashedVMobject(
+            circle,
+            num_dashes=32
+        )
+
+    def get_orthocenter_guides(self, A, B, C):
+
+        def altitude(A, B, C):
+            #Find the projection of A onto line BC
+            BC = C - B
+
+            t = np.dot(A - B, BC) / np.dot(BC, BC)
+
+            foot = B + t * BC
+
+            line = DashedLine(
+                A,
+                foot,
+                stroke_width=self.GUIDE_STROKE_WIDTH,
+                color=self.GUIDE_COLOR,
+                stroke_opacity=self.GUIDE_OPACITY
+            )
+
+            return line, foot
+
+        # Three altitudes
+        altitude_A, foot_A = altitude(A, B, C)
+        altitude_B, foot_B = altitude(B, A, C)
+        altitude_C, foot_C = altitude(C, A, B)
+
+        # Right angle markers
+        right_angle_A = RightAngle(
+            Line(foot_A, A),
+            Line(B, C),
+            length=0.15,
+            color=self.GUIDE_COLOR
+        )
+
+        right_angle_B = RightAngle(
+            Line(foot_B, B),
+            Line(A, C),
+            length=0.15,
+            color=self.GUIDE_COLOR
+        )
+
+        right_angle_C = RightAngle(
+            Line(foot_C, C),
+            Line(A, B),
+            length=0.15,
+            color=self.GUIDE_COLOR
+        )
+
+        return VGroup(
+            altitude_A,
+            altitude_B,
+            altitude_C,
+            right_angle_A,
+            right_angle_B,
+            right_angle_C
+        )
+
+    def get_guides(self, center_type, A, B, C):
+        if center_type == Center.CENTROID:
+            return self.get_centroid_guides(A, B, C)
+
+        elif center_type == Center.CIRCUMCENTER:
+            return self.get_circumcenter_guides(A, B, C)
+
+        elif center_type == Center.INCENTER:
+            return self.get_incenter_guides(A, B, C)
+
+        elif center_type == Center.ORTHOCENTER:
+            return self.get_orthocenter_guides(A, B, C)
     
     def construct(self):
+        SHOW_GUIDES = True
 
         # Which center belongs to which triangle
         center_types = [
@@ -80,6 +210,7 @@ class TriangleCenters(Scene):
 
         triangles = {}
         dots = {}
+
         colors = {
             Center.CENTROID: "#B00B69",
             Center.CIRCUMCENTER: "#87FF78",
@@ -113,6 +244,8 @@ class TriangleCenters(Scene):
             ).scale(0.5)
         }
 
+        guides = {}
+
         # Now actually create the triangles
         for center_type, position in zip(center_types, posCenters):
             a = A + position
@@ -142,6 +275,14 @@ class TriangleCenters(Scene):
 
             labels[center_type].move_to(position + DOWN * 1.7)
 
+            if SHOW_GUIDES:
+                guides[center_type] = self.get_guides(
+                    center_type,
+                    a,
+                    b,
+                    c
+                )
+
         # Animation
         self.play(
             *[FadeIn(triangles[center_type]) for center_type in center_types]
@@ -149,6 +290,10 @@ class TriangleCenters(Scene):
 
         self.play(
             *[FadeIn(dots[center_type]) for center_type in center_types]
+        )
+
+        self.play(
+            *[FadeIn(guides[center_type]) for center_type in center_types]
         )
 
         self.play(
@@ -183,6 +328,7 @@ class TriangleCenters(Scene):
         for A_new, B_new, C_new in triangle_shapes:
             new_triangles = {}
             new_centers = {}
+            new_guides = {}
 
             for center_type, position in zip(center_types, posCenters):
                 a = A_new + position
@@ -198,6 +344,14 @@ class TriangleCenters(Scene):
                     b,
                     c
                 )
+
+                if SHOW_GUIDES:
+                    new_guides[center_type] = self.get_guides(
+                        center_type,
+                        a,
+                        b,
+                        c
+                    )
 
             self.play(
                 # Morph triangles
@@ -216,6 +370,14 @@ class TriangleCenters(Scene):
                     for center_type in center_types
                 ],
 
+                # Guides
+                *[
+                    guides[center_type].animate.become(
+                        new_guides[center_type]
+                    )
+                    for center_type in center_types
+                ] if SHOW_GUIDES else [],
+
                 run_time=3,
             )
 
@@ -227,6 +389,14 @@ class TriangleCenters(Scene):
         self.play(
             *[
                 FadeOut(labels[center_type])
+                for center_type in center_types
+            ],
+            run_time=1
+        )
+
+        self.play(
+            *[
+                FadeOut(guides[center_type])
                 for center_type in center_types
             ],
             run_time=1
