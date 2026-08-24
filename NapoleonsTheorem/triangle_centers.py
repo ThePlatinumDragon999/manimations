@@ -1,5 +1,12 @@
 from manim import *
 import numpy as np
+from enum import Enum
+
+class Center(Enum):
+    CENTROID = 1
+    CIRCUMCENTER = 2
+    INCENTER = 3
+    ORTHOCENTER = 4
 
 class TriangleCenters(Scene):
     def get_centroid(self, A, B, C):
@@ -34,8 +41,29 @@ class TriangleCenters(Scene):
 
     def get_orthocenter(self, A, B, C):
          return A + B + C - 2 * self.get_circumcenter(A, B, C)
+
+    def get_center(self, center_type, A, B, C):
+        if center_type == Center.CENTROID:
+            return self.get_centroid(A, B, C)
+
+        elif center_type == Center.CIRCUMCENTER:
+            return self.get_circumcenter(A, B, C)
+
+        elif center_type == Center.INCENTER:
+            return self.get_incenter(A, B, C)
+
+        elif center_type == Center.ORTHOCENTER:
+            return self.get_orthocenter(A, B, C)
     
     def construct(self):
+
+        # Which center belongs to which triangle
+        center_types = [
+            Center.CENTROID,
+            Center.CIRCUMCENTER,
+            Center.INCENTER,
+            Center.ORTHOCENTER
+        ]
 
         # Triangle positions on screen
         posCenters = [
@@ -45,75 +73,61 @@ class TriangleCenters(Scene):
             RIGHT * 4.8
         ]
 
-        # Makes one base triangle, then moves to four centers
+        # Initial triangle
         A = np.array([-1.0, -1.0, 0])
         B = np.array([1.0, -1.0, 0])
         C = np.array([0.0, 1.0, 0])
 
-        triangles = []
-        center_dots = []
+        triangles = {}
+        dots = {}
+        labels = {
+            Center.CENTROID: Text("Centroid", font="OpenDyslexic").scale(0.5),
+            Center.CIRCUMCENTER: Text("Circumcenter", font="OpenDyslexic").scale(0.5),
+            Center.INCENTER: Text("Incenter", font="OpenDyslexic").scale(0.5),
+            Center.ORTHOCENTER: Text("Orthocenter", font="OpenDyslexic").scale(0.5)
+        }
 
         # Now actually create the triangles
-        for position in posCenters:
-            triangle = Polygon(
-                A + position,
-                B + position,
-                C + position,
-                stroke_width = 10,
-                color = "white"
-            )
-
-            triangles.append(triangle)
-
-        # Calculate triangle centers
-        for position in posCenters:
+        for center_type, position in zip(center_types, posCenters):
             a = A + position
             b = B + position
             c = C + position
 
-            center_dots.append([
-                Dot(self.get_centroid(a, b, c)),
-                Dot(self.get_circumcenter(a, b, c)),
-                Dot(self.get_incenter(a, b, c)),
-                Dot(self.get_orthocenter(a, b, c))
-            ])
+            triangles[center_type] = Polygon(
+                a,
+                b,
+                c,
+                stroke_width = 10,
+                color = "white"
+            )
 
-        # Pick a center for each triangle
-        dots = [
-            center_dots[0][0], # Centroid
-            center_dots[1][1], # Circumcenter
-            center_dots[2][2], # Incenter
-            center_dots[3][3] # Orthocenter
-        ]
+            # Appropriate center
+            center = self.get_center(
+                center_type,
+                a,
+                b,
+                c
+            )
 
-        # Labels
-        labels = [
-            Text("Centroid").scale(0.6),
-            Text("Circumcenter").scale(0.6),
-            Text("Incenter").scale(0.6),
-            Text("Orthocenter").scale(0.6)
-        ]
+            # Center dot
+            dots[center_type] = Dot(center)
 
-        for label, position in zip(labels, posCenters):
-            label.move_to(position + UP * 1.7)
+            labels[center_type].move_to(position + DOWN * 1.7)
 
         # Animation
         self.play(
-            *[FadeIn(triangle) for triangle in triangles]
+            *[FadeIn(triangles[center_type]) for center_type in center_types]
         )
 
         self.play(
-            *[FadeIn(dot) for dot in dots]
+            *[FadeIn(dots[center_type]) for center_type in center_types]
         )
 
         self.play(
-            *[Write(label) for label in labels]
+            *[Write(labels[center_type]) for center_type in center_types]
         )
 
         self.wait(1)
-
-        # TODO: Fix these triangles. 
-        # They don't update with the correct centers / positions
 
         triangle_shapes = [
             # Triangle 1
@@ -121,47 +135,105 @@ class TriangleCenters(Scene):
                 np.array([-0.5, -1.0, 0]),
                 np.array([0.5, -1.0, 0]),
                 np.array([0.3, 1.5, 0])
+            ),
+
+            # Triangle 2
+            (
+                np.array([-0.75, -1.0, 0]),
+                np.array([0.75, -1.0, 0]),
+                np.array([-0.5, -0.2, 0])
+            ),
+
+            # Triangle 2
+            (
+                np.array([-1, -1.0, 0]),
+                np.array([1, -1.0, 0]),
+                np.array([0, np.sqrt(3) - 1, 0])
             )
         ]
 
         for A_new, B_new, C_new in triangle_shapes:
-            new_triangles = []
-            new_centers = []
+            new_triangles = {}
+            new_centers = {}
 
-            for position in posCenters:
+            for center_type, position in zip(center_types, posCenters):
                 a = A_new + position
                 b = B_new + position
                 c = C_new + position
 
-                new_triangles.append(
+                new_triangles[center_type] = \
                     Polygon(a, b, c, stroke_width=10, color="white")
+
+                new_centers[center_type] = self.get_center(
+                    center_type,
+                    a,
+                    b,
+                    c
                 )
 
-                new_centers.append([
-                    self.get_centroid(a, b, c),
-                    self.get_circumcenter(a, b, c),
-                    self.get_incenter(a, b, c),
-                    self.get_orthocenter(a, b, c)
-                ])
+            self.play(
+                # Morph triangles
+                *[
+                    triangles[center_type].animate.become(
+                        new_triangles[center_type]
+                    )
+                    for center_type in center_types
+                ],
 
+                # Move center dots
+                *[
+                    dots[center_type].animate.move_to(
+                        new_centers[center_type]
+                    )
+                    for center_type in center_types
+                ],
+
+                run_time=3,
+            )
+
+            self.wait(1)
+
+        self.wait(1)
+
+        # Fade out the labels
         self.play(
-            # Triangle 1
-            triangles[0].animate.become(new_triangles[0]),
-            dots[0].animate.move_to(new_centers[0][0]),
-
-            # Triangle 2
-            triangles[1].animate.become(new_triangles[1]),
-            dots[1].animate.move_to(new_centers[1][1]),
-
-            # Triangle 3
-            triangles[2].animate.become(new_triangles[2]),
-            dots[2].animate.move_to(new_centers[2][2]),
-
-            # Triangle 4
-            triangles[3].animate.become(new_triangles[3]),
-            dots[3].animate.move_to(new_centers[3][3]),
-
-            run_time=3,
+            *[
+                FadeOut(labels[center_type])
+                for center_type in center_types
+            ],
+            run_time=1
         )
 
-        self.wait()
+        for center_type in center_types:
+            new_centers[center_type] = self.get_center(
+                center_type,
+                A_new,
+                B_new,
+                C_new
+            )
+
+        self.play(
+            *[
+                triangles[center_type].animate.become(
+                    Polygon(
+                        A_new,
+                        B_new,
+                        C_new,
+                        stroke_width=10,
+                        color = "white"
+                    )
+                )
+                for center_type in center_types
+            ],
+
+            *[
+                dots[center_type].animate.move_to(
+                    new_centers[center_type]
+                )
+                for center_type in center_types
+            ],
+
+            run_time=3
+        )
+
+        self.wait(1)
