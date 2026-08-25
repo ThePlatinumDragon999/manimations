@@ -187,6 +187,11 @@ class TriangleCenters(Scene):
     def construct(self):
         SHOW_GUIDES = True
 
+        GUIDE_Z = 0
+        TRIANGLE_Z = 1
+        DOT_Z = 2
+        LABEL_Z = 3
+
         # Which center belongs to which triangle
         center_types = [
             Center.CENTROID,
@@ -258,7 +263,7 @@ class TriangleCenters(Scene):
                 c,
                 stroke_width = 10,
                 color = colors[center_type]
-            )
+            ).set_z_index(TRIANGLE_Z)
 
             # Appropriate center
             center = self.get_center(
@@ -271,9 +276,10 @@ class TriangleCenters(Scene):
             # Center dot
             dots[center_type] = Dot(
                 center,
-                color=colors[center_type])
+                color=colors[center_type]
+            ).set_z_index(DOT_Z)
 
-            labels[center_type].move_to(position + DOWN * 1.7)
+            labels[center_type].move_to(position + DOWN * 1.7).set_z_index(LABEL_Z)
 
             if SHOW_GUIDES:
                 guides[center_type] = self.get_guides(
@@ -281,7 +287,7 @@ class TriangleCenters(Scene):
                     a,
                     b,
                     c
-                )
+                ).set_z_index(GUIDE_Z)
 
         # Animation
         self.play(

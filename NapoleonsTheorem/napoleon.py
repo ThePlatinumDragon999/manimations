@@ -49,7 +49,7 @@ def equilateral_on_side(P, Q, opposite_vertex):
     if np.sign(candidate_1) != np.sign(side):
         return ccR
     else:
-        return ccR
+        return cR
 
 class Napoleon1(Scene):
     def construct(self):
