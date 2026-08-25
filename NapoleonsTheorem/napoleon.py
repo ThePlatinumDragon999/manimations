@@ -368,3 +368,170 @@ class Napoleon1(Scene):
         )
 
         self.wait(2)
+
+class NapoleonProof(Scene):
+    def construct(self):
+        # Rule of thumb:
+        # x in [-7.1, 7.1]
+        # y in [-4, 4]
+
+        # Invisible control points
+        A = Dot(
+            [-1.0, -1.0, 0],
+            radius=0.2,
+            fill_opacity=0,
+            stroke_opacity=0,
+        )
+
+        B = Dot(
+            [-1.0, 1.0, 0],
+            radius=0.2,
+            fill_opacity=0,
+            stroke_opacity=0,
+        )
+
+        C = Dot(
+            [1.0, -1.0, 0],
+            radius=0.2,
+            fill_opacity=0,
+            stroke_opacity=0,
+        )
+
+        # Original triangle
+        triangle = always_redraw(
+            lambda: triangle_lines(
+                A.get_center(),
+                B.get_center(),
+                C.get_center(),
+                stroke_width=10,
+            )
+        )
+
+        # Equilateral triangles
+        E1 = always_redraw(lambda: VGroup(
+            Line(
+                A.get_center(),
+                equilateral_on_side(
+                    A.get_center(),
+                    B.get_center(),
+                    C.get_center(),
+                ),
+                stroke_width=10,
+            ).set_cap_style(CapStyleType.ROUND),
+
+            Line(
+                B.get_center(),
+                equilateral_on_side(
+                    A.get_center(),
+                    B.get_center(),
+                    C.get_center(),
+                ),
+                stroke_width=10,
+            ).set_cap_style(CapStyleType.ROUND),
+        ))
+
+        E2 = always_redraw(lambda: VGroup(
+            Line(
+                B.get_center(),
+                equilateral_on_side(
+                    B.get_center(),
+                    C.get_center(),
+                    A.get_center(),
+                ),
+                stroke_width=10,
+            ).set_cap_style(CapStyleType.ROUND),
+
+            Line(
+                C.get_center(),
+                equilateral_on_side(
+                    B.get_center(),
+                    C.get_center(),
+                    A.get_center(),
+                ),
+                stroke_width=10,
+            ).set_cap_style(CapStyleType.ROUND),
+        ))
+
+        E3 = always_redraw(lambda: VGroup(
+            Line(
+                C.get_center(),
+                equilateral_on_side(
+                    C.get_center(),
+                    A.get_center(),
+                    B.get_center(),
+                ),
+                stroke_width=10,
+            ).set_cap_style(CapStyleType.ROUND),
+
+            Line(
+                A.get_center(),
+                equilateral_on_side(
+                    C.get_center(),
+                    A.get_center(),
+                    B.get_center(),
+                ),
+                stroke_width=10,
+            ).set_cap_style(CapStyleType.ROUND),
+        ))
+
+        # Centroids
+        G1 = always_redraw(lambda: Dot(
+            (
+                A.get_center()
+                + B.get_center()
+                + equilateral_on_side(
+                    A.get_center(),
+                    B.get_center(),
+                    C.get_center(),
+                )
+            ) / 3,
+            radius=0.16,
+            color="#B00B69",
+        ))
+
+        G2 = always_redraw(lambda: Dot(
+            (
+                B.get_center()
+                + C.get_center()
+                + equilateral_on_side(
+                    B.get_center(),
+                    C.get_center(),
+                    A.get_center(),
+                )
+            ) / 3,
+            radius=0.16,
+            color="#87FF78",
+        ))
+
+        G3 = always_redraw(lambda: Dot(
+            (
+                C.get_center()
+                + A.get_center()
+                + equilateral_on_side(
+                    C.get_center(),
+                    A.get_center(),
+                    B.get_center(),
+                )
+            ) / 3,
+            radius=0.16,
+            color="#9AB5FF",
+        ))
+
+        centroid_dots = VGroup(
+            G1,
+            G2,
+            G3,
+        )
+
+        self.play(
+            FadeIn(triangle),
+            FadeIn(E1),
+            FadeIn(E2),
+            FadeIn(E3),
+            FadeIn(G1),
+            FadeIn(G2),
+            FadeIn(G3),
+            run_time=1,
+        )
+
+        self.wait(1)
