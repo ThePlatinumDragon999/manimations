@@ -73,6 +73,43 @@ def triangle_lines(P, Q, R, stroke_width=10):
         ).set_cap_style(CapStyleType.ROUND),
     )
 
+def rotated_point(P, center, angle):
+    """
+    Rotate point P around center by angle radians.
+    """
+    x = P - center
+
+    rotation = np.array([
+        [np.cos(angle), -np.sin(angle), 0],
+        [np.sin(angle),  np.cos(angle), 0],
+        [0,              0,             1],
+    ])
+
+    return center + rotation @ x
+
+def angle_arc(vertex, p1, p2, radius=0.35, color=WHITE):
+    """
+    Draw an angle arc at 'vertex' from p1 to p2.
+    """
+
+    v1 = p1 - vertex
+    v2 = p2 - vertex
+
+    a1 = np.arctan2(v1[1], v1[0])
+    a2 = np.arctan2(v2[1], v2[0])
+
+    # Normalize so we get the smaller angle
+    diff = (a2 - a1 + PI) % TAU - PI
+
+    return Arc(
+        radius=radius,
+        start_angle=a1,
+        angle=diff,
+        arc_center=vertex,
+        stroke_width=6,
+        color=color,
+    )
+
 class Napoleon1(Scene):
     def construct(self):
 
@@ -293,3 +330,41 @@ class Napoleon1(Scene):
         )
 
         self.wait(1)
+
+        # Deform the original triangles
+        self.play(
+            A.animate.move_to([-2.0, -1.5, 0]),
+            B.animate.move_to([-1.0, 2.0, 0]),
+            C.animate.move_to([2.0, -0.5, 0]),
+            run_time=3,
+        )
+
+        self.wait(1)
+
+        self.play(
+            A.animate.move_to([-2.0, 1.0, 0]),
+            B.animate.move_to([1.0, 2.0, 0]),
+            C.animate.move_to([2.0, -1.5, 0]),
+            run_time=3,
+        )
+
+        self.wait(1)
+
+        self.play(
+            A.animate.move_to([-2.5, -1.5, 0]),
+            B.animate.move_to([0.0, 2.5, 0]),
+            C.animate.move_to([2.5, -1.0, 0]),
+            run_time=3,
+        )
+
+        self.wait(1)
+
+        # Return to original triangle
+        self.play(
+            A.animate.move_to([-1.0, -1.0, 0]),
+            B.animate.move_to([-1.0, 1.0, 0]),
+            C.animate.move_to([1.0, -1.0, 0]),
+            run_time=3,
+        )
+
+        self.wait(2)
