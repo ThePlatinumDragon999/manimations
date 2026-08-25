@@ -123,6 +123,7 @@ class Napoleon1(Scene):
             radius=0.2,
             fill_opacity=0,
             stroke_opacity=0,
+            color="#f05f01"
         )
 
         B = Dot(
@@ -130,6 +131,7 @@ class Napoleon1(Scene):
             radius=0.2,
             fill_opacity=0,
             stroke_opacity=0,
+            color="#27A830"
         )
 
         C = Dot(
@@ -137,6 +139,7 @@ class Napoleon1(Scene):
             radius=0.2,
             fill_opacity=0,
             stroke_opacity=0,
+            color="#206B87"
         )
 
         # Original triangle
@@ -157,7 +160,20 @@ class Napoleon1(Scene):
         self.wait(1)
 
         # Equilateral triangles
-        equilateral_1 = always_redraw(lambda: VGroup(
+        E1 = always_redraw(lambda: VGroup(
+            Polygon(
+                A.get_center(),
+                B.get_center(),
+                equilateral_on_side(
+                    A.get_center(),
+                    B.get_center(),
+                    C.get_center(),
+                ),
+                fill_color="#B00B69",
+                fill_opacity=0.2,
+                stroke_opacity=0,
+            ),
+
             Line(
                 A.get_center(),
                 equilateral_on_side(
@@ -179,7 +195,20 @@ class Napoleon1(Scene):
             ).set_cap_style(CapStyleType.ROUND),
         ))
 
-        equilateral_2 = always_redraw(lambda: VGroup(
+        E2 = always_redraw(lambda: VGroup(
+            Polygon(
+                B.get_center(),
+                C.get_center(),
+                equilateral_on_side(
+                    B.get_center(),
+                    C.get_center(),
+                    A.get_center(),
+                ),
+                fill_color="#87FF78",
+                fill_opacity=0.2,
+                stroke_opacity=0,
+            ),
+
             Line(
                 B.get_center(),
                 equilateral_on_side(
@@ -201,7 +230,20 @@ class Napoleon1(Scene):
             ).set_cap_style(CapStyleType.ROUND),
         ))
 
-        equilateral_3 = always_redraw(lambda: VGroup(
+        E3 = always_redraw(lambda: VGroup(
+            Polygon(
+                C.get_center(),
+                A.get_center(),
+                equilateral_on_side(
+                    C.get_center(),
+                    A.get_center(),
+                    B.get_center(),
+                ),
+                fill_color="#9AB5FF",
+                fill_opacity=0.2,
+                stroke_opacity=0,
+            ),
+
             Line(
                 C.get_center(),
                 equilateral_on_side(
@@ -225,22 +267,10 @@ class Napoleon1(Scene):
 
         # Animate construction of equilateral triangles
         self.play(
-            FadeIn(equilateral_1),
-            run_time=1
-        )
-
-        self.wait(0.3)
-
-        self.play(
-            FadeIn(equilateral_2),
-            run_time=1
-        )
-
-        self.wait(0.3)
-
-        self.play(
-            FadeIn(equilateral_3),
-            run_time=1
+            FadeIn(E1),
+            FadeIn(E2),
+            FadeIn(E3),
+            run_time=3
         )
 
         self.wait(1)
@@ -258,7 +288,7 @@ class Napoleon1(Scene):
             ) / 3,
             radius=0.16,
             color="#B00B69",
-        ))
+        )).set_z_index(2)
 
         G2 = always_redraw(lambda: Dot(
             (
@@ -272,7 +302,7 @@ class Napoleon1(Scene):
             ) / 3,
             radius=0.16,
             color="#87FF78",
-        ))
+        )).set_z_index(2)
 
         G3 = always_redraw(lambda: Dot(
             (
@@ -286,7 +316,7 @@ class Napoleon1(Scene):
             ) / 3,
             radius=0.16,
             color="#9AB5FF",
-        ))
+        )).set_z_index(2)
 
         centroid_dots = VGroup(
             G1,
@@ -307,35 +337,38 @@ class Napoleon1(Scene):
             Line(
                 G1.get_center(),
                 G2.get_center(),
-                stroke_width=8,
+                stroke_width=10,
+                color="#C5C100",
             ).set_cap_style(CapStyleType.ROUND),
 
             Line(
                 G2.get_center(),
                 G3.get_center(),
-                stroke_width=8,
+                stroke_width=10,
+                color="#C5C100",
             ).set_cap_style(CapStyleType.ROUND),
 
             Line(
                 G3.get_center(),
                 G1.get_center(),
-                stroke_width=8,
+                stroke_width=10,
+                color="#C5C100",
             ).set_cap_style(CapStyleType.ROUND),
 
-        ))
+        )).set_z_index(1)
 
         self.play(
-            Create(centroid_triangle),
-            run_time=1.5
+            FadeIn(centroid_triangle),
+            run_time=1
         )
 
         self.wait(1)
 
         # Deform the original triangles
         self.play(
-            A.animate.move_to([-2.0, -1.5, 0]),
+            A.animate.move_to([-1.5, -1.2, 0]),
             B.animate.move_to([-1.0, 2.0, 0]),
-            C.animate.move_to([2.0, -0.5, 0]),
+            C.animate.move_to([2.0, -0.0, 0]),
             run_time=3,
         )
 
@@ -343,27 +376,26 @@ class Napoleon1(Scene):
 
         self.play(
             A.animate.move_to([-2.0, 1.0, 0]),
-            B.animate.move_to([1.0, 2.0, 0]),
+            B.animate.move_to([0.8, 1.5, 0]),
             C.animate.move_to([2.0, -1.5, 0]),
             run_time=3,
         )
 
         self.wait(1)
-
+        
         self.play(
-            A.animate.move_to([-2.5, -1.5, 0]),
-            B.animate.move_to([0.0, 2.5, 0]),
-            C.animate.move_to([2.5, -1.0, 0]),
+            A.animate.move_to([1.7, 1.2, 0]),
+            B.animate.move_to([2.0, -0.2, 0]),
+            C.animate.move_to([-1.5, 1.0, 0]),
             run_time=3,
         )
 
         self.wait(1)
 
-        # Return to original triangle
         self.play(
-            A.animate.move_to([-1.0, -1.0, 0]),
-            B.animate.move_to([-1.0, 1.0, 0]),
-            C.animate.move_to([1.0, -1.0, 0]),
+            A.animate.move_to([-0.0, np.sqrt(3) - 1, 0]),
+            B.animate.move_to([1.0, -1.0, 0]),
+            C.animate.move_to([-1.0, -1.0, 0]),
             run_time=3,
         )
 
@@ -409,6 +441,19 @@ class NapoleonProof(Scene):
 
         # Equilateral triangles
         E1 = always_redraw(lambda: VGroup(
+            Polygon(
+                A.get_center(),
+                B.get_center(),
+                equilateral_on_side(
+                    A.get_center(),
+                    B.get_center(),
+                    C.get_center(),
+                ),
+                fill_color="#B00B69",
+                fill_opacity=0.2,
+                stroke_opacity=0,
+            ),
+
             Line(
                 A.get_center(),
                 equilateral_on_side(
@@ -431,6 +476,19 @@ class NapoleonProof(Scene):
         ))
 
         E2 = always_redraw(lambda: VGroup(
+            Polygon(
+                B.get_center(),
+                C.get_center(),
+                equilateral_on_side(
+                    B.get_center(),
+                    C.get_center(),
+                    A.get_center(),
+                ),
+                fill_color="#87FF78",
+                fill_opacity=0.2,
+                stroke_opacity=0,
+            ),
+
             Line(
                 B.get_center(),
                 equilateral_on_side(
@@ -453,6 +511,19 @@ class NapoleonProof(Scene):
         ))
 
         E3 = always_redraw(lambda: VGroup(
+            Polygon(
+                C.get_center(),
+                A.get_center(),
+                equilateral_on_side(
+                    C.get_center(),
+                    A.get_center(),
+                    B.get_center(),
+                ),
+                fill_color="#9AB5FF",
+                fill_opacity=0.2,
+                stroke_opacity=0,
+            ),
+
             Line(
                 C.get_center(),
                 equilateral_on_side(
