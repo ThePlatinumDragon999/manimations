@@ -51,53 +51,142 @@ def equilateral_on_side(P, Q, opposite_vertex):
     else:
         return cR
 
+def triangle_lines(P, Q, R, stroke_width=10):
+    """
+    Create the three visible sides of a triangle
+    """
+
+    return VGroup(
+        Line(
+            P, Q,
+            stroke_width=stroke_width
+        ).set_cap_style(CapStyleType.ROUND),
+
+        Line(
+            Q, R,
+            stroke_width=stroke_width
+        ).set_cap_style(CapStyleType.ROUND),
+
+        Line(
+            R, P,
+            stroke_width=stroke_width
+        ).set_cap_style(CapStyleType.ROUND),
+    )
+
 class Napoleon1(Scene):
     def construct(self):
 
         # Rule of thumb:
         # x in [-7.1, 7.1]
         # y in [-4, 4]
-        A = np.array([-1.0, -1.0, 0])
-        B = np.array([-1.0, 1.0, 0])
-        C = np.array([1.0, -1.0, 0])
 
-        triangle = Polygon(
-            A, B, C,
-            stroke_width=10,
-            color="white",
+        # Invisible control points
+        A = Dot(
+            [-1.0, -1.0, 0],
+            radius=0.2,
+            fill_opacity=0,
+            stroke_opacity=0,
         )
 
-        triangle = VGroup(
-            Line(A, B, stroke_width=10).set_cap_style(CapStyleType.ROUND),
-            Line(A, C, stroke_width=10).set_cap_style(CapStyleType.ROUND),
-            Line(B, C, stroke_width=10).set_cap_style(CapStyleType.ROUND)
+        B = Dot(
+            [-1.0, 1.0, 0],
+            radius=0.2,
+            fill_opacity=0,
+            stroke_opacity=0,
         )
 
-        self.play(FadeIn(triangle))
+        C = Dot(
+            [1.0, -1.0, 0],
+            radius=0.2,
+            fill_opacity=0,
+            stroke_opacity=0,
+        )
+
+        # Original triangle
+        triangle = always_redraw(
+            lambda: triangle_lines(
+                A.get_center(),
+                B.get_center(),
+                C.get_center(),
+                stroke_width=10,
+            )
+        )
+
+        self.play(
+            FadeIn(triangle),
+            run_time=1
+        )
+
         self.wait(1)
 
-        # Construct equilateral triangles
+        # Equilateral triangles
+        equilateral_1 = always_redraw(lambda: VGroup(
+            Line(
+                A.get_center(),
+                equilateral_on_side(
+                    A.get_center(),
+                    B.get_center(),
+                    C.get_center(),
+                ),
+                stroke_width=10,
+            ).set_cap_style(CapStyleType.ROUND),
 
-        D = equilateral_on_side(A, B, C)
-        E = equilateral_on_side(B, C, A)
-        F = equilateral_on_side(C, A, B)
+            Line(
+                B.get_center(),
+                equilateral_on_side(
+                    A.get_center(),
+                    B.get_center(),
+                    C.get_center(),
+                ),
+                stroke_width=10,
+            ).set_cap_style(CapStyleType.ROUND),
+        ))
 
-        equilateral_1 = VGroup(
-            Line(B, D, stroke_width=10).set_cap_style(CapStyleType.ROUND),
-            Line(D, A, stroke_width=10).set_cap_style(CapStyleType.ROUND)
-        )
+        equilateral_2 = always_redraw(lambda: VGroup(
+            Line(
+                B.get_center(),
+                equilateral_on_side(
+                    B.get_center(),
+                    C.get_center(),
+                    A.get_center(),
+                ),
+                stroke_width=10,
+            ).set_cap_style(CapStyleType.ROUND),
 
-        equilateral_2 = VGroup(
-            Line(C, E, stroke_width=10).set_cap_style(CapStyleType.ROUND),
-            Line(E, B, stroke_width=10).set_cap_style(CapStyleType.ROUND)
-        )
+            Line(
+                C.get_center(),
+                equilateral_on_side(
+                    B.get_center(),
+                    C.get_center(),
+                    A.get_center(),
+                ),
+                stroke_width=10,
+            ).set_cap_style(CapStyleType.ROUND),
+        ))
 
-        equilateral_3 = VGroup(
-            Line(A, F, stroke_width=10).set_cap_style(CapStyleType.ROUND),
-            Line(F, C, stroke_width=10).set_cap_style(CapStyleType.ROUND)
-        )
+        equilateral_3 = always_redraw(lambda: VGroup(
+            Line(
+                C.get_center(),
+                equilateral_on_side(
+                    C.get_center(),
+                    A.get_center(),
+                    B.get_center(),
+                ),
+                stroke_width=10,
+            ).set_cap_style(CapStyleType.ROUND),
 
-        # First side
+            Line(
+                A.get_center(),
+                equilateral_on_side(
+                    C.get_center(),
+                    A.get_center(),
+                    B.get_center(),
+                ),
+                stroke_width=10,
+            ).set_cap_style(CapStyleType.ROUND),
+        ))
+
+        # Animate construction of equilateral triangles
         self.play(
             FadeIn(equilateral_1),
             run_time=1
@@ -105,7 +194,6 @@ class Napoleon1(Scene):
 
         self.wait(0.3)
 
-        # Second side
         self.play(
             FadeIn(equilateral_2),
             run_time=1
@@ -113,7 +201,6 @@ class Napoleon1(Scene):
 
         self.wait(0.3)
 
-        # Third side
         self.play(
             FadeIn(equilateral_3),
             run_time=1
@@ -122,17 +209,87 @@ class Napoleon1(Scene):
         self.wait(1)
 
         # Centroids
-        G1 = (A + B + D) / 3
-        G2 = (B + C + E) / 3
-        G3 = (A + C + F) / 3
+        G1 = always_redraw(lambda: Dot(
+            (
+                A.get_center()
+                + B.get_center()
+                + equilateral_on_side(
+                    A.get_center(),
+                    B.get_center(),
+                    C.get_center(),
+                )
+            ) / 3,
+            radius=0.16,
+            color="#B00B69",
+        ))
+
+        G2 = always_redraw(lambda: Dot(
+            (
+                B.get_center()
+                + C.get_center()
+                + equilateral_on_side(
+                    B.get_center(),
+                    C.get_center(),
+                    A.get_center(),
+                )
+            ) / 3,
+            radius=0.16,
+            color="#87FF78",
+        ))
+
+        G3 = always_redraw(lambda: Dot(
+            (
+                C.get_center()
+                + A.get_center()
+                + equilateral_on_side(
+                    C.get_center(),
+                    A.get_center(),
+                    B.get_center(),
+                )
+            ) / 3,
+            radius=0.16,
+            color="#9AB5FF",
+        ))
 
         centroid_dots = VGroup(
-            Dot(G1, radius=0.16, color="#B00B69"),
-            Dot(G2, radius=0.16, color="#87FF78"),
-            Dot(G3, radius=0.16, color="#9AB5FF")
+            G1,
+            G2,
+            G3,
         )
 
         self.play(
             FadeIn(centroid_dots),
             run_time=1
         )
+
+        self.wait(1)
+
+        # Connect the centroids
+        centroid_triangle = always_redraw(lambda: VGroup(
+
+            Line(
+                G1.get_center(),
+                G2.get_center(),
+                stroke_width=8,
+            ).set_cap_style(CapStyleType.ROUND),
+
+            Line(
+                G2.get_center(),
+                G3.get_center(),
+                stroke_width=8,
+            ).set_cap_style(CapStyleType.ROUND),
+
+            Line(
+                G3.get_center(),
+                G1.get_center(),
+                stroke_width=8,
+            ).set_cap_style(CapStyleType.ROUND),
+
+        ))
+
+        self.play(
+            Create(centroid_triangle),
+            run_time=1.5
+        )
+
+        self.wait(1)
