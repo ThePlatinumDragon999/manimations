@@ -59,17 +59,20 @@ def triangle_lines(P, Q, R, stroke_width=10):
     return VGroup(
         Line(
             P, Q,
-            stroke_width=stroke_width
+            stroke_width=stroke_width,
+            color="white"
         ).set_cap_style(CapStyleType.ROUND),
 
         Line(
             Q, R,
-            stroke_width=stroke_width
+            stroke_width=stroke_width,
+            color="white"
         ).set_cap_style(CapStyleType.ROUND),
 
         Line(
             R, P,
-            stroke_width=stroke_width
+            stroke_width=stroke_width,
+            color="white"
         ).set_cap_style(CapStyleType.ROUND),
     )
 
@@ -110,6 +113,223 @@ def angle_arc(vertex, p1, p2, radius=0.35, color=WHITE):
         color=color,
     )
 
+def shade_color(hex_color, opacity):
+    """
+    Darken a hex color as if it were drawn with the given opacity
+    over a black background.
+    """
+    hex_color = hex_color.lstrip("#")
+
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+
+    r = round(r * opacity)
+    g = round(g * opacity)
+    b = round(b * opacity)
+
+    return f"#{r:02X}{g:02X}{b:02X}"
+
+class NapoleonConstruction:
+    def __init__(self, A, B, C):
+        # Store the control points
+        self.A = A
+        self.B = B
+        self.C = C
+
+        self.triangle = always_redraw(
+            lambda: triangle_lines(
+                self.A.get_center(),
+                self.B.get_center(),
+                self.C.get_center(),
+                stroke_width=10,
+            )
+        )
+
+        # Equilateral triangle EA
+        # (constructed on side BC, opposite A)
+        self.EA = always_redraw(lambda: VGroup(
+            Polygon(
+                self.B.get_center(),
+                self.C.get_center(),
+                equilateral_on_side(
+                    self.B.get_center(),
+                    self.C.get_center(),
+                    self.A.get_center(),
+                ),
+                fill_color=shade_color("#87FF78", 0.2),
+                fill_opacity=1,
+                stroke_width=10,
+                stroke_color="white",
+                stroke_opacity=1
+            ),
+
+            Line(
+                self.B.get_center(),
+                equilateral_on_side(
+                    self.B.get_center(),
+                    self.C.get_center(),
+                    self.A.get_center(),
+                ),
+                stroke_width=10,
+                color="white"
+            ).set_cap_style(CapStyleType.ROUND),
+
+            Line(
+                self.C.get_center(),
+                equilateral_on_side(
+                    self.B.get_center(),
+                    self.C.get_center(),
+                    self.A.get_center(),
+                ),
+                stroke_width=10,
+                color="white"
+            ).set_cap_style(CapStyleType.ROUND),
+        ))
+
+        # Equilateral triangle EB
+        # (constructed on side CA, opposite B)
+        self.EB = always_redraw(lambda: VGroup(
+            Polygon(
+                self.C.get_center(),
+                self.A.get_center(),
+                equilateral_on_side(
+                    self.C.get_center(),
+                    self.A.get_center(),
+                    self.B.get_center(),
+                ),
+                fill_color=shade_color("#9AB5FF", 0.2),
+                fill_opacity=1,
+                stroke_width=10,
+                stroke_color="white",
+                stroke_opacity=1
+            ),
+
+            Line(
+                self.C.get_center(),
+                equilateral_on_side(
+                    self.C.get_center(),
+                    self.A.get_center(),
+                    self.B.get_center(),
+                ),
+                stroke_width=10,
+                color="white"
+            ).set_cap_style(CapStyleType.ROUND),
+
+            Line(
+                self.A.get_center(),
+                equilateral_on_side(
+                    self.C.get_center(),
+                    self.A.get_center(),
+                    self.B.get_center(),
+                ),
+                stroke_width=10,
+                color="white"
+            ).set_cap_style(CapStyleType.ROUND),
+        ))
+
+        # Equilateral triangle EC
+        # (constructed on side AB, opposite C)
+        self.EC = always_redraw(lambda: VGroup(
+            Polygon(
+                self.A.get_center(),
+                self.B.get_center(),
+                equilateral_on_side(
+                    self.A.get_center(),
+                    self.B.get_center(),
+                    self.C.get_center(),
+                ),
+                fill_color=shade_color("#B00B69", 0.2),
+                fill_opacity=1,
+                stroke_width=10,
+                stroke_color="white",
+                stroke_opacity=1
+            ),
+
+            Line(
+                self.A.get_center(),
+                equilateral_on_side(
+                    self.A.get_center(),
+                    self.B.get_center(),
+                    self.C.get_center(),
+                ),
+                stroke_width=10,
+                color="white"
+            ).set_cap_style(CapStyleType.ROUND),
+
+            Line(
+                self.B.get_center(),
+                equilateral_on_side(
+                    self.A.get_center(),
+                    self.B.get_center(),
+                    self.C.get_center(),
+                ),
+                stroke_width=10,
+                color="white"
+            ).set_cap_style(CapStyleType.ROUND),
+        ))
+
+        # Centroid GB
+        self.GB = always_redraw(lambda: Dot(
+            (
+                self.B.get_center()
+                + self.C.get_center()
+                + equilateral_on_side(
+                    self.B.get_center(),
+                    self.C.get_center(),
+                    self.A.get_center(),
+                )
+            ) / 3,
+            radius=0.16,
+            color="#87FF78",
+        ))
+
+        # Centroid GC
+        self.GC = always_redraw(lambda: Dot(
+            (
+                self.C.get_center()
+                + self.A.get_center()
+                + equilateral_on_side(
+                    self.C.get_center(),
+                    self.A.get_center(),
+                    self.B.get_center(),
+                )
+            ) / 3,
+            radius=0.16,
+            color="#9AB5FF",
+        ))
+
+        # Centroid GA
+        self.GA = always_redraw(lambda: Dot(
+            (
+                self.A.get_center()
+                + self.B.get_center()
+                + equilateral_on_side(
+                    self.A.get_center(),
+                    self.B.get_center(),
+                    self.C.get_center(),
+                )
+            ) / 3,
+            radius=0.16,
+            color="#B00B69",
+        ))
+
+        self.centroids = VGroup(
+            self.GA,
+            self.GB,
+            self.GC,
+        )
+
+        self.all = VGroup(
+            self.triangle,
+            self.EA,
+            self.EB,
+            self.EC,
+            self.GA,
+            self.GB,
+            self.GC,
+        )
+
 class Napoleon1(Scene):
     def construct(self):
 
@@ -121,7 +341,7 @@ class Napoleon1(Scene):
         A = Dot(
             [-1.0, -1.0, 0],
             radius=0.2,
-            fill_opacity=0,
+            fill_opacity=1,
             stroke_opacity=0,
             color="#f05f01"
         )
@@ -129,7 +349,7 @@ class Napoleon1(Scene):
         B = Dot(
             [-1.0, 1.0, 0],
             radius=0.2,
-            fill_opacity=0,
+            fill_opacity=1,
             stroke_opacity=0,
             color="#27A830"
         )
@@ -137,7 +357,7 @@ class Napoleon1(Scene):
         C = Dot(
             [1.0, -1.0, 0],
             radius=0.2,
-            fill_opacity=0,
+            fill_opacity=1,
             stroke_opacity=0,
             color="#206B87"
         )
@@ -409,200 +629,136 @@ class NapoleonProof(Scene):
 
         # Invisible control points
         A = Dot(
-            [-1.0, -1.0, 0],
+            [-1.5, -0.3, 0],
             radius=0.2,
-            fill_opacity=0,
+            fill_opacity=1,
             stroke_opacity=0,
+            color="#f05f01"
         )
 
         B = Dot(
-            [-1.0, 1.0, 0],
+            [-1.0, 2.4, 0],
             radius=0.2,
-            fill_opacity=0,
+            fill_opacity=1,
             stroke_opacity=0,
+            color="#27A830"
         )
 
         C = Dot(
-            [1.0, -1.0, 0],
+            [1.0, 0.0, 0],
             radius=0.2,
-            fill_opacity=0,
+            fill_opacity=1,
             stroke_opacity=0,
+            color="#206B87"
         )
 
-        # Original triangle
-        triangle = always_redraw(
-            lambda: triangle_lines(
-                A.get_center(),
-                B.get_center(),
-                C.get_center(),
-                stroke_width=10,
-            )
-        )
+        A1 = A.copy()
+        B1 = B.copy()
+        C1 = C.copy()
 
-        # Equilateral triangles
-        E1 = always_redraw(lambda: VGroup(
-            Polygon(
-                A.get_center(),
-                B.get_center(),
-                equilateral_on_side(
-                    A.get_center(),
-                    B.get_center(),
-                    C.get_center(),
-                ),
-                fill_color="#B00B69",
-                fill_opacity=0.2,
-                stroke_opacity=0,
-            ),
+        construction2 = NapoleonConstruction(A1, B1, C1)
 
-            Line(
-                A.get_center(),
-                equilateral_on_side(
-                    A.get_center(),
-                    B.get_center(),
-                    C.get_center(),
-                ),
-                stroke_width=10,
-            ).set_cap_style(CapStyleType.ROUND),
+        A2 = A.copy()
+        B2 = B.copy()
+        C2 = C.copy()
 
-            Line(
-                B.get_center(),
-                equilateral_on_side(
-                    A.get_center(),
-                    B.get_center(),
-                    C.get_center(),
-                ),
-                stroke_width=10,
-            ).set_cap_style(CapStyleType.ROUND),
-        ))
-
-        E2 = always_redraw(lambda: VGroup(
-            Polygon(
-                B.get_center(),
-                C.get_center(),
-                equilateral_on_side(
-                    B.get_center(),
-                    C.get_center(),
-                    A.get_center(),
-                ),
-                fill_color="#87FF78",
-                fill_opacity=0.2,
-                stroke_opacity=0,
-            ),
-
-            Line(
-                B.get_center(),
-                equilateral_on_side(
-                    B.get_center(),
-                    C.get_center(),
-                    A.get_center(),
-                ),
-                stroke_width=10,
-            ).set_cap_style(CapStyleType.ROUND),
-
-            Line(
-                C.get_center(),
-                equilateral_on_side(
-                    B.get_center(),
-                    C.get_center(),
-                    A.get_center(),
-                ),
-                stroke_width=10,
-            ).set_cap_style(CapStyleType.ROUND),
-        ))
-
-        E3 = always_redraw(lambda: VGroup(
-            Polygon(
-                C.get_center(),
-                A.get_center(),
-                equilateral_on_side(
-                    C.get_center(),
-                    A.get_center(),
-                    B.get_center(),
-                ),
-                fill_color="#9AB5FF",
-                fill_opacity=0.2,
-                stroke_opacity=0,
-            ),
-
-            Line(
-                C.get_center(),
-                equilateral_on_side(
-                    C.get_center(),
-                    A.get_center(),
-                    B.get_center(),
-                ),
-                stroke_width=10,
-            ).set_cap_style(CapStyleType.ROUND),
-
-            Line(
-                A.get_center(),
-                equilateral_on_side(
-                    C.get_center(),
-                    A.get_center(),
-                    B.get_center(),
-                ),
-                stroke_width=10,
-            ).set_cap_style(CapStyleType.ROUND),
-        ))
-
-        # Centroids
-        G1 = always_redraw(lambda: Dot(
-            (
-                A.get_center()
-                + B.get_center()
-                + equilateral_on_side(
-                    A.get_center(),
-                    B.get_center(),
-                    C.get_center(),
-                )
-            ) / 3,
-            radius=0.16,
-            color="#B00B69",
-        ))
-
-        G2 = always_redraw(lambda: Dot(
-            (
-                B.get_center()
-                + C.get_center()
-                + equilateral_on_side(
-                    B.get_center(),
-                    C.get_center(),
-                    A.get_center(),
-                )
-            ) / 3,
-            radius=0.16,
-            color="#87FF78",
-        ))
-
-        G3 = always_redraw(lambda: Dot(
-            (
-                C.get_center()
-                + A.get_center()
-                + equilateral_on_side(
-                    C.get_center(),
-                    A.get_center(),
-                    B.get_center(),
-                )
-            ) / 3,
-            radius=0.16,
-            color="#9AB5FF",
-        ))
-
-        centroid_dots = VGroup(
-            G1,
-            G2,
-            G3,
-        )
+        construction3 = NapoleonConstruction(A1, B1, C1)
 
         self.play(
-            FadeIn(triangle),
-            FadeIn(E1),
-            FadeIn(E2),
-            FadeIn(E3),
-            FadeIn(G1),
-            FadeIn(G2),
-            FadeIn(G3),
+            FadeIn(construction2.triangle),
+            FadeIn(construction2.EA),
+            FadeIn(construction2.EB),
+            FadeIn(construction2.EC),
+            FadeIn(construction2.GA),
+            FadeIn(construction2.GB),
+            FadeIn(construction2.GC),
             run_time=1,
         )
 
+        self.add(
+            construction3.triangle,
+            construction3.EA,
+            construction3.EB,
+            construction3.EC,
+            construction3.GA,
+            construction3.GB,
+            construction3.GC,
+        )
+
+        construction = NapoleonConstruction(A, B, C)
+
+        self.add(
+            construction.triangle,
+            construction.EA,
+            construction.EB,
+            construction.EC,
+            construction.GA,
+            construction.GB,
+            construction.GC,
+        )
+
         self.wait(1)
+
+        # Labels
+        label_A = always_redraw(lambda: Text(
+            "A",
+            font="OpenDyslexic",
+            font_size=32,
+            color="white",
+        ).next_to(
+            construction.GA.get_center(),
+            UP + LEFT,
+            buff=0.15
+        ))
+
+        label_B = always_redraw(lambda: Text(
+            "B",
+            font="OpenDyslexic",
+            font_size=32,
+            color="white",
+        ).next_to(
+            construction.GB.get_center(),
+            UP + RIGHT,
+            buff=0.15
+        ))
+
+        label_C = always_redraw(lambda: Text(
+            "C",
+            font="OpenDyslexic",
+            font_size=32,
+            color="white",
+        ).next_to(
+            construction.GC.get_center(),
+            DOWN + RIGHT,
+            buff=0.15
+        ))
+
+        self.play(
+            FadeIn(label_A),
+            FadeIn(label_B),
+            FadeIn(label_C),
+            run_time=1,
+        )
+
+        BC_line = always_redraw(lambda: Line(
+            construction.GB.get_center(),
+            construction.GC.get_center(),
+            stroke_width=10,
+            color="#C5C100",
+            )
+        ).set_z_index(1)
+
+        BC_line_copy = BC_line.copy()
+
+        self.play(FadeIn(BC_line))
+
+        rotation_center_2 = construction.GC.get_center()
+
+        self.play(
+            Rotate(
+                VGroup(A1, B1, C1, BC_line_copy),
+                angle=2 * PI / 3,
+                about_point=rotation_center_2,
+            ),
+            run_time=4,
+        )
