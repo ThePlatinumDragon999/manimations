@@ -1,6 +1,5 @@
 from manim import *
 import numpy as np
-from napoleon_helpers import *
 from napoleon_construction import *
 
 class NapoleonProof(Scene):
@@ -10,7 +9,7 @@ class NapoleonProof(Scene):
         # y in [-4, 4]
 
         # Invisible control points
-        A = Dot(
+        X = Dot(
             [-1.5, -0.3, 0],
             radius=0.2,
             fill_opacity=0,
@@ -18,7 +17,7 @@ class NapoleonProof(Scene):
             color="#f05f01"
         )
 
-        B = Dot(
+        Y = Dot(
             [-1.0, 2.4, 0],
             radius=0.2,
             fill_opacity=0,
@@ -26,7 +25,7 @@ class NapoleonProof(Scene):
             color="#27A830"
         )
 
-        C = Dot(
+        Z = Dot(
             [1.0, 0.0, 0],
             radius=0.2,
             fill_opacity=0,
@@ -35,30 +34,30 @@ class NapoleonProof(Scene):
         )
 
         # Top layer
-        construction = NapoleonConstruction(A, B, C)
+        construction = NapoleonConstruction(X, Y, Z)
 
-        A1 = A.copy()
-        B1 = B.copy()
-        C1 = C.copy()
+        X1 = X.copy()
+        Y1 = Y.copy()
+        Z1 = Z.copy()
 
-        construction2 = NapoleonConstruction(A1, B1, C1)
+        construction2 = NapoleonConstruction(X1, Y1, Z1)
 
-        A2 = A.copy()
-        B2 = B.copy()
-        C2 = C.copy()
+        X2 = X.copy()
+        Y2 = Y.copy()
+        Z2 = Z.copy()
 
-        construction3 = NapoleonConstruction(A1, B1, C1)
+        construction3 = NapoleonConstruction(X1, Y1, Z1)
 
         # Construct the centroids:
         # Centroid GB
         GB = always_redraw(lambda: Dot(
             (
-                construction.B.get_center()
-                + construction.C.get_center()
+                construction.Y.get_center()
+                + construction.Z.get_center()
                 + equilateral_on_side(
-                    construction.B.get_center(),
-                    construction.C.get_center(),
-                    construction.A.get_center(),
+                    construction.Y.get_center(),
+                    construction.Z.get_center(),
+                    construction.X.get_center(),
                 )
             ) / 3,
             radius=0.16,
@@ -68,12 +67,12 @@ class NapoleonProof(Scene):
         # Centroid GC
         GC = always_redraw(lambda: Dot(
             (
-                construction.C.get_center()
-                + construction.A.get_center()
+                construction.Z.get_center()
+                + construction.X.get_center()
                 + equilateral_on_side(
-                    construction.C.get_center(),
-                    construction.A.get_center(),
-                    construction.B.get_center(),
+                    construction.Z.get_center(),
+                    construction.X.get_center(),
+                    construction.Y.get_center(),
                 )
             ) / 3,
             radius=0.16,
@@ -83,12 +82,12 @@ class NapoleonProof(Scene):
         # Centroid GA
         GA = always_redraw(lambda: Dot(
             (
-                construction.A.get_center()
-                + construction.B.get_center()
+                construction.X.get_center()
+                + construction.Y.get_center()
                 + equilateral_on_side(
-                    construction.A.get_center(),
-                    construction.B.get_center(),
-                    construction.C.get_center(),
+                    construction.X.get_center(),
+                    construction.Y.get_center(),
+                    construction.Z.get_center(),
                 )
             ) / 3,
             radius=0.16,
@@ -103,25 +102,25 @@ class NapoleonProof(Scene):
 
         self.play(
             FadeIn(construction2.triangle),
-            FadeIn(construction2.EA),
-            FadeIn(construction2.EB),
-            FadeIn(construction2.EC),
+            FadeIn(construction2.EX),
+            FadeIn(construction2.EY),
+            FadeIn(construction2.EZ),
             FadeIn(centroids),
             run_time=1,
         )
 
         self.add(
             construction3.triangle,
-            construction3.EA,
-            construction3.EB,
-            construction3.EC,
+            construction3.EX,
+            construction3.EY,
+            construction3.EZ,
         )
 
         self.add(
             construction.triangle,
-            construction.EA,
-            construction.EB,
-            construction.EC,
+            construction.EX,
+            construction.EY,
+            construction.EZ,
         )
 
         self.wait(1)
@@ -189,13 +188,14 @@ class NapoleonProof(Scene):
 
         self.play(
             Rotate(
-                VGroup(A1, B1, C1, BC_line_copy, GD),
+                VGroup(X1, Y1, Z1, BC_line_copy, GD),
                 angle=2 * PI / 3,
                 about_point=rotation_center_2,
             ),
             run_time=4,
         )
 
+        # Add label for D centroid
         label_D = always_redraw(lambda: Text(
             "D",
             font="OpenDyslexic",
