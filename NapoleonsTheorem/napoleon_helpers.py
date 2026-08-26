@@ -44,7 +44,6 @@ def equilateral_on_side(P, Q, opposite_vertex):
     side = cross_2d(v, opposite_vertex - P)
 
     candidate_1 = cross_2d(v, ccR - P)
-    candidate_2 = cross_2d(v, cR - P)
 
     if np.sign(candidate_1) != np.sign(side):
         return ccR
@@ -75,20 +74,6 @@ def triangle_lines(P, Q, R, stroke_width=10):
             color="white"
         ).set_cap_style(CapStyleType.ROUND),
     )
-
-def rotated_point(P, center, angle):
-    """
-    Rotate point P around center by angle radians.
-    """
-    x = P - center
-
-    rotation = np.array([
-        [np.cos(angle), -np.sin(angle), 0],
-        [np.sin(angle),  np.cos(angle), 0],
-        [0,              0,             1],
-    ])
-
-    return center + rotation @ x
 
 def angle_arc(vertex, p1, p2, radius=0.35, color=WHITE):
     """
