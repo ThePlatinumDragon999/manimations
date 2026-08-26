@@ -141,63 +141,9 @@ class NapoleonConstruction:
             ).set_cap_style(CapStyleType.ROUND),
         ))
 
-        # Centroid GB
-        self.GB = always_redraw(lambda: Dot(
-            (
-                self.B.get_center()
-                + self.C.get_center()
-                + equilateral_on_side(
-                    self.B.get_center(),
-                    self.C.get_center(),
-                    self.A.get_center(),
-                )
-            ) / 3,
-            radius=0.16,
-            color="#87FF78",
-        ))
-
-        # Centroid GC
-        self.GC = always_redraw(lambda: Dot(
-            (
-                self.C.get_center()
-                + self.A.get_center()
-                + equilateral_on_side(
-                    self.C.get_center(),
-                    self.A.get_center(),
-                    self.B.get_center(),
-                )
-            ) / 3,
-            radius=0.16,
-            color="#9AB5FF",
-        ))
-
-        # Centroid GA
-        self.GA = always_redraw(lambda: Dot(
-            (
-                self.A.get_center()
-                + self.B.get_center()
-                + equilateral_on_side(
-                    self.A.get_center(),
-                    self.B.get_center(),
-                    self.C.get_center(),
-                )
-            ) / 3,
-            radius=0.16,
-            color="#B00B69",
-        ))
-
-        self.centroids = VGroup(
-            self.GA,
-            self.GB,
-            self.GC,
-        )
-
         self.all = VGroup(
             self.triangle,
             self.EA,
             self.EB,
-            self.EC,
-            self.GA,
-            self.GB,
-            self.GC,
+            self.EC
         )

@@ -13,7 +13,7 @@ class NapoleonProof(Scene):
         A = Dot(
             [-1.5, -0.3, 0],
             radius=0.2,
-            fill_opacity=1,
+            fill_opacity=0,
             stroke_opacity=0,
             color="#f05f01"
         )
@@ -21,7 +21,7 @@ class NapoleonProof(Scene):
         B = Dot(
             [-1.0, 2.4, 0],
             radius=0.2,
-            fill_opacity=1,
+            fill_opacity=0,
             stroke_opacity=0,
             color="#27A830"
         )
@@ -29,10 +29,13 @@ class NapoleonProof(Scene):
         C = Dot(
             [1.0, 0.0, 0],
             radius=0.2,
-            fill_opacity=1,
+            fill_opacity=0,
             stroke_opacity=0,
             color="#206B87"
         )
+
+        # Top layer
+        construction = NapoleonConstruction(A, B, C)
 
         A1 = A.copy()
         B1 = B.copy()
@@ -46,14 +49,64 @@ class NapoleonProof(Scene):
 
         construction3 = NapoleonConstruction(A1, B1, C1)
 
+        # Construct the centroids:
+        # Centroid GB
+        GB = always_redraw(lambda: Dot(
+            (
+                construction.B.get_center()
+                + construction.C.get_center()
+                + equilateral_on_side(
+                    construction.B.get_center(),
+                    construction.C.get_center(),
+                    construction.A.get_center(),
+                )
+            ) / 3,
+            radius=0.16,
+            color="#87FF78",
+        ))
+
+        # Centroid GC
+        GC = always_redraw(lambda: Dot(
+            (
+                construction.C.get_center()
+                + construction.A.get_center()
+                + equilateral_on_side(
+                    construction.C.get_center(),
+                    construction.A.get_center(),
+                    construction.B.get_center(),
+                )
+            ) / 3,
+            radius=0.16,
+            color="#9AB5FF",
+        ))
+
+        # Centroid GA
+        GA = always_redraw(lambda: Dot(
+            (
+                construction.A.get_center()
+                + construction.B.get_center()
+                + equilateral_on_side(
+                    construction.A.get_center(),
+                    construction.B.get_center(),
+                    construction.C.get_center(),
+                )
+            ) / 3,
+            radius=0.16,
+            color="#B00B69",
+        ))
+
+        centroids = VGroup(
+            GA,
+            GB,
+            GC,
+        ).set_z_index(3)
+
         self.play(
             FadeIn(construction2.triangle),
             FadeIn(construction2.EA),
             FadeIn(construction2.EB),
             FadeIn(construction2.EC),
-            FadeIn(construction2.GA),
-            FadeIn(construction2.GB),
-            FadeIn(construction2.GC),
+            FadeIn(centroids),
             run_time=1,
         )
 
@@ -62,21 +115,13 @@ class NapoleonProof(Scene):
             construction3.EA,
             construction3.EB,
             construction3.EC,
-            construction3.GA,
-            construction3.GB,
-            construction3.GC,
         )
-
-        construction = NapoleonConstruction(A, B, C)
 
         self.add(
             construction.triangle,
             construction.EA,
             construction.EB,
             construction.EC,
-            construction.GA,
-            construction.GB,
-            construction.GC,
         )
 
         self.wait(1)
@@ -88,7 +133,7 @@ class NapoleonProof(Scene):
             font_size=32,
             color="white",
         ).next_to(
-            construction.GA.get_center(),
+            GA.get_center(),
             UP + LEFT,
             buff=0.15
         ))
@@ -99,7 +144,7 @@ class NapoleonProof(Scene):
             font_size=32,
             color="white",
         ).next_to(
-            construction.GB.get_center(),
+            GB.get_center(),
             UP + RIGHT,
             buff=0.15
         ))
@@ -110,7 +155,7 @@ class NapoleonProof(Scene):
             font_size=32,
             color="white",
         ).next_to(
-            construction.GC.get_center(),
+            GC.get_center(),
             DOWN + RIGHT,
             buff=0.15
         ))
@@ -123,8 +168,8 @@ class NapoleonProof(Scene):
         )
 
         BC_line = always_redraw(lambda: Line(
-            construction.GB.get_center(),
-            construction.GC.get_center(),
+            GB.get_center(),
+            GC.get_center(),
             stroke_width=10,
             color="#C5C100",
             )
@@ -134,13 +179,35 @@ class NapoleonProof(Scene):
 
         self.play(FadeIn(BC_line))
 
-        rotation_center_2 = construction.GC.get_center()
+        GD = GB.copy()
+
+        GD.move_to(GB.get_center())
+
+        self.add(GD)
+
+        rotation_center_2 = GC.get_center()
 
         self.play(
             Rotate(
-                VGroup(A1, B1, C1, BC_line_copy),
+                VGroup(A1, B1, C1, BC_line_copy, GD),
                 angle=2 * PI / 3,
                 about_point=rotation_center_2,
             ),
             run_time=4,
+        )
+
+        label_D = always_redraw(lambda: Text(
+            "D",
+            font="OpenDyslexic",
+            font_size=32,
+            color="white",
+        ).next_to(
+            GD.get_center(),
+            UP + LEFT,
+            buff=0.15
+        ))
+
+        self.play(
+            FadeIn(label_D),
+            run_time=1
         )
