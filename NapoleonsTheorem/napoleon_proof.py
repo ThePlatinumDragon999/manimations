@@ -4,13 +4,15 @@ from napoleon_construction import *
 
 class NapoleonProof(Scene):
     def construct(self):
+        ANGLE_RADIUS=0.4
+        
         # Rule of thumb:
         # x in [-7.1, 7.1]
         # y in [-4, 4]
 
         # Invisible control points
         X = Dot(
-            [-1.5, -0.3, 0],
+            [-0.8, 0.3, 0],
             radius=0.2,
             fill_opacity=0,
             stroke_opacity=0,
@@ -18,7 +20,7 @@ class NapoleonProof(Scene):
         )
 
         Y = Dot(
-            [-1.0, 2.4, 0],
+            [-0.0, 2.4, 0],
             radius=0.2,
             fill_opacity=0,
             stroke_opacity=0,
@@ -26,7 +28,7 @@ class NapoleonProof(Scene):
         )
 
         Z = Dot(
-            [1.0, 0.0, 0],
+            [1.7, 0.6, 0],
             radius=0.2,
             fill_opacity=0,
             stroke_opacity=0,
@@ -129,7 +131,7 @@ class NapoleonProof(Scene):
         label_A = always_redraw(lambda: Text(
             "A",
             font="OpenDyslexic",
-            font_size=32,
+            font_size=24,
             color="white",
         ).next_to(
             GA.get_center(),
@@ -140,7 +142,7 @@ class NapoleonProof(Scene):
         label_B = always_redraw(lambda: Text(
             "B",
             font="OpenDyslexic",
-            font_size=32,
+            font_size=24,
             color="white",
         ).next_to(
             GB.get_center(),
@@ -151,7 +153,7 @@ class NapoleonProof(Scene):
         label_C = always_redraw(lambda: Text(
             "C",
             font="OpenDyslexic",
-            font_size=32,
+            font_size=24,
             color="white",
         ).next_to(
             GC.get_center(),
@@ -190,7 +192,7 @@ class NapoleonProof(Scene):
             GC.get_center(),
             GB.get_center(),
             GD.get_center(),
-            radius=0.6,
+            radius=ANGLE_RADIUS,
             color="white",
         ))
 
@@ -207,11 +209,31 @@ class NapoleonProof(Scene):
             run_time=4,
         )
 
+        self.wait(1)
+
+        angle_label_1 = always_redraw(lambda: Text(
+            "120°",
+            font="OpenDyslexic",
+            font_size=24,
+            color="white"
+        ).add_background_rectangle(
+            color="black",
+            opacity=0.8,
+            buff=0.06,
+        ).move_to(
+            angle1.get_center() + 0.5 * UP
+        ).set_z_index(3)
+        )
+
+        self.play(FadeIn(angle_label_1))
+
+        self.wait(1)
+
         # Add label for D centroid
         label_D = always_redraw(lambda: Text(
             "D",
             font="OpenDyslexic",
-            font_size=32,
+            font_size=24,
             color="white",
         ).next_to(
             GD.get_center(),
@@ -250,7 +272,7 @@ class NapoleonProof(Scene):
             GA.get_center(),
             GB.get_center(),
             GD2.get_center(),
-            radius=0.6,
+            radius=ANGLE_RADIUS,
             color="white",
         ))
 
@@ -268,6 +290,32 @@ class NapoleonProof(Scene):
             run_time=4,
         )
 
+        self.wait(1)
+
+        angle_label_2 = always_redraw(lambda: Text(
+            "120°",
+            font="OpenDyslexic",
+            font_size=24,
+            color="white"
+        ).add_background_rectangle(
+            color="black",
+            opacity=0.8,
+            buff=0.06,
+        ).move_to(
+            angle2.get_center() + RIGHT * 0.8 + DOWN * 0.2
+        ).set_z_index(3)
+        )
+
+        self.play(FadeIn(angle_label_2))
+
+        self.wait(2)
+
+        self.play(
+            FadeOut(angle_label_1),
+            FadeOut(angle_label_2),
+            run_time=1
+        )
+
         AC_line = always_redraw(lambda: Line(
             GA.get_center(),
             GC.get_center(),
@@ -276,8 +324,6 @@ class NapoleonProof(Scene):
             )
         ).set_z_index(1)
 
-        self.wait(2)
-
         self.play(FadeIn(AC_line))
 
         # Change angles into 2 other angles to fade in
@@ -285,7 +331,7 @@ class NapoleonProof(Scene):
             GA.get_center(),
             GB.get_center(),
             GC.get_center(),
-            radius=0.6,
+            radius=ANGLE_RADIUS,
             color="white",
         ))
 
@@ -293,29 +339,87 @@ class NapoleonProof(Scene):
             GC.get_center(),
             GA.get_center(),
             GB.get_center(),
-            radius=0.6,
+            radius=ANGLE_RADIUS,
             color="white",
         ))
 
         self.add(angle3)
         self.add(angle4)
 
-        # Angle arc
-        angle5 = always_redraw(lambda: angle_arc(
-            GB.get_center(),
-            GA.get_center(),
-            GC.get_center(),
-            radius=0.6,
-            color="white",
-        ))
+        angle_label_3 = always_redraw(lambda: Text(
+            "60°",
+            font="OpenDyslexic",
+            font_size=24,
+            color="white"
+        ).add_background_rectangle(
+            color="black",
+            opacity=0.8,
+            buff=0.06,
+        ).next_to(
+            angle3, 
+            RIGHT * 0.4, 
+            buff=0.1
+        ).set_z_index(3)
+        )
 
-        self.play(FadeIn(angle5))
+        angle_label_3d = always_redraw(lambda: Text(
+            "60°",
+            font="OpenDyslexic",
+            font_size=24,
+            color="white"
+        ).add_background_rectangle(
+            color="black",
+            opacity=0.8,
+            buff=0.06,
+        ).move_to(
+            angle3.get_center() + 0.6 * DOWN + 0.2 * LEFT, 
+        ).set_z_index(3)
+        )
+
+        angle_label_4 = always_redraw(lambda: Text(
+            "60°",
+            font="OpenDyslexic",
+            font_size=24,
+            color="white"
+        ).add_background_rectangle(
+            color="black",
+            opacity=0.8,
+            buff=0.06,
+        ).next_to(
+            angle4, 
+            UP,
+            buff=0.1
+        ).set_z_index(3)
+        )
+
+        angle_label_4d = always_redraw(lambda: Text(
+            "60°",
+            font="OpenDyslexic",
+            font_size=24,
+            color="white"
+        ).add_background_rectangle(
+            color="black",
+            opacity=0.8,
+            buff=0.06,
+        ).move_to(
+            angle4.get_center() + 0.6 * LEFT + 0.1 * DOWN, 
+        ).set_z_index(3)
+        )
+
+        self.play(
+            FadeIn(angle_label_3),
+            FadeIn(angle_label_4),
+            FadeIn(angle_label_3d),
+            FadeIn(angle_label_4d)
+        )
 
         self.wait(1)
 
         self.play(
             FadeOut(angle1),
             FadeOut(angle2),
+            FadeOut(angle_label_3d),
+            FadeOut(angle_label_4d),
             FadeOut(GD),
             FadeOut(GD2),
             FadeOut(label_D),
@@ -335,4 +439,57 @@ class NapoleonProof(Scene):
             FadeOut(construction2.EZ),
             run_time=0.5
         )
+
+        self.wait(2)
+
+        # Final centroid
+        final_centroid = (
+            X.get_center()
+            + Y.get_center()
+            + Z.get_center()
+        ) / 3
+
+        scale_factor = 1.2
+
+        self.play(
+            X.animate.move_to(
+                scale_factor * (X.get_center() - final_centroid)
+            ),
+            Y.animate.move_to(
+                scale_factor * (Y.get_center() - final_centroid)
+            ),
+            Z.animate.move_to(
+                scale_factor * (Z.get_center() - final_centroid)
+            ),
+            run_time=2
+        )
+
+        # Angle arc
+        angle5 = always_redraw(lambda: angle_arc(
+            GB.get_center(),
+            GA.get_center(),
+            GC.get_center(),
+            radius=ANGLE_RADIUS,
+            color="white",
+        ))
+
+        angle_label_5 = always_redraw(lambda: Text(
+            "60°",
+            font="OpenDyslexic",
+            font_size=24,
+            color="white"
+        ).add_background_rectangle(
+            color="black",
+            opacity=0.8,
+            buff=0.06,
+        ).move_to(
+            angle5.get_center() + 0.4 * LEFT + 0.2 * DOWN
+        ).set_z_index(3)
+        )
+
+        self.play(FadeIn(angle5))
+
+        self.wait(1)
+
+        self.play(FadeIn(angle_label_5))
 
