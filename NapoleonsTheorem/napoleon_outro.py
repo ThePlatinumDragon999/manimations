@@ -74,3 +74,34 @@ class NapoleonOutro(MovingCameraScene):
         # Basis vectors
         vector1 = (pos_X - pos_Z) + (pos_Z - pos_EQX)
         vector2 = (pos_Y - pos_Z) + (pos_EQZ - pos_Y)
+
+        # Tile the plane
+        tiled_group = VGroup()
+        for i in range(-4, 5):
+            for j in range(-4, 5):
+                if i == 0 and j == 0:
+                    continue  # Skip the central original construction
+                
+                offset = i * vector1 + j * vector2
+                
+                sub_X = Dot(pos_X + offset, fill_opacity=0, stroke_opacity=0)
+                sub_Y = Dot(pos_Y + offset, fill_opacity=0, stroke_opacity=0)
+                sub_Z = Dot(pos_Z + offset, fill_opacity=0, stroke_opacity=0)
+                
+                sub_construction = NapoleonConstruction(sub_X, sub_Y, sub_Z)
+                tiled_group.add(sub_construction.all)
+
+        # Fade in the entire tiled plane
+        self.play(
+            FadeIn(tiled_group, lag_ratio=0.01),
+            run_time=3
+        )
+        self.wait(1)
+
+        # Zoom out to reveal the full tessellation pattern
+        self.play(
+            self.camera.frame.animate.set_width(26),
+            run_time=3
+        )
+        self.wait(2)
+
