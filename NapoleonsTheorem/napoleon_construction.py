@@ -3,7 +3,7 @@ import numpy as np
 from napoleon_helpers import *
 
 class NapoleonConstruction:
-    def __init__(self, X, Y, Z):
+    def __init__(self, X, Y, Z, opacity=0.2):
         # Store the control points
         self.X = X
         self.Y = Y
@@ -29,7 +29,7 @@ class NapoleonConstruction:
                     self.Z.get_center(),
                     self.X.get_center(),
                 ),
-                fill_color=shade_color("#87FF78", 0.2),
+                fill_color=shade_color("#87FF78", opacity),
                 fill_opacity=1,
                 stroke_width=10,
                 stroke_color="white",
@@ -70,7 +70,7 @@ class NapoleonConstruction:
                     self.X.get_center(),
                     self.Y.get_center(),
                 ),
-                fill_color=shade_color("#9AB5FF", 0.2),
+                fill_color=shade_color("#9AB5FF", opacity),
                 fill_opacity=1,
                 stroke_width=10,
                 stroke_color="white",
@@ -111,7 +111,7 @@ class NapoleonConstruction:
                     self.Y.get_center(),
                     self.Z.get_center(),
                 ),
-                fill_color=shade_color("#B00B69", 0.2),
+                fill_color=shade_color("#B00B69", opacity),
                 fill_opacity=1,
                 stroke_width=10,
                 stroke_color="white",

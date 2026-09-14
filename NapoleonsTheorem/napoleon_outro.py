@@ -35,7 +35,9 @@ class NapoleonOutro(MovingCameraScene):
             color="#206B87"
         )
 
-        construction = NapoleonConstruction(X, Y, Z)
+        opacity = 0.7
+
+        construction = NapoleonConstruction(X, Y, Z, opacity)
 
         self.play(
             FadeIn(construction.triangle),
@@ -54,17 +56,7 @@ class NapoleonOutro(MovingCameraScene):
 
         self.wait(1)
 
-        label_X = always_redraw(lambda: MathTex("X").scale(0.8).move_to(X.get_center() + DOWN * 0.4))
-        label_Y = always_redraw(lambda: MathTex("Y").scale(0.8).move_to(Y.get_center() + UP * 0.4))
-        label_Z = always_redraw(lambda: MathTex("Z").scale(0.8).move_to(Z.get_center() + RIGHT * 0.4))
-
-        self.play(
-            FadeIn(label_X),
-            FadeIn(label_Y),
-            FadeIn(label_Z),
-            run_time=1
-        )
-
+        # Set up the basis vectors
         pos_X = X.get_center()
         pos_Y = Y.get_center()
         pos_Z = Z.get_center()
@@ -88,7 +80,7 @@ class NapoleonOutro(MovingCameraScene):
                 sub_Y = Dot(pos_Y + offset, fill_opacity=0, stroke_opacity=0)
                 sub_Z = Dot(pos_Z + offset, fill_opacity=0, stroke_opacity=0)
                 
-                sub_construction = NapoleonConstruction(sub_X, sub_Y, sub_Z)
+                sub_construction = NapoleonConstruction(sub_X, sub_Y, sub_Z, opacity)
                 tiled_group.add(sub_construction.all)
 
         # Fade in the entire tiled plane
