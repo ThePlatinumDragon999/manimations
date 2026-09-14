@@ -3,7 +3,7 @@ import numpy as np
 from napoleon_construction import *
 from napoleon_helpers import equilateral_on_side
 
-class NapoleonOutro(Scene):
+class NapoleonOutro(MovingCameraScene):
     def construct(self):
 
         # Rule of thumb:
@@ -68,23 +68,9 @@ class NapoleonOutro(Scene):
         pos_X = X.get_center()
         pos_Y = Y.get_center()
         pos_Z = Z.get_center()
-        pos_EQ = equilateral_on_side(pos_Y, pos_Z, pos_X)
+        pos_EQX = equilateral_on_side(pos_Y, pos_Z, pos_X)
+        pos_EQZ = equilateral_on_side(pos_X, pos_Y, pos_Z)
 
-        # Component vectors
-        vec1 = pos_X - pos_Z
-        vec2 = pos_Z - pos_EQ
-
-        # First arrow starting from X:
-        arrow1 = Arrow(pos_X, pos_X + vec1, color=BLUE, buff=0)
-
-        # Second arrow
-        arrow2 = Arrow(pos_X + vec1, pos_X + vec1 + vec2, color=GREEN, buff=0)
-
-        resultant_arrow = Arrow(pos_X, pos_X + vec1 + vec2, color=YELLOW, buff=0)
-
-        self.play(
-            FadeIn(arrow1),
-            FadeIn(arrow2),
-            FadeIn(resultant_arrow),
-            run_time=2
-        )
+        # Basis vectors
+        vector1 = (pos_X - pos_Z) + (pos_Z - pos_EQX)
+        vector2 = (pos_Y - pos_Z) + (pos_EQZ - pos_Y)
