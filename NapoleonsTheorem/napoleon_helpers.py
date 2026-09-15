@@ -114,3 +114,46 @@ def shade_color(hex_color, opacity):
     b = round(b * opacity)
 
     return f"#{r:02X}{g:02X}{b:02X}"
+
+def generate_order(num_rings):
+    directions = [
+        (-1, 1),
+        (0, 1),
+        (1, 0),
+        (1, -1),
+        (0, -1),
+        (-1, 0),
+    ]
+
+    order = []
+
+    for r in range(1, num_rings + 1):
+
+        # Start at the bottom of the ring
+        start = (0, -r)
+
+        ring = [start]
+        current = start
+
+        # Walk around the hexagonal ring
+        for dx, dy in directions:
+            for _ in range(r):
+                current = (
+                    current[0] + dx,
+                    current[1] + dy
+                )
+                ring.append(current)
+
+        # Remove duplicate starting point
+        ring.pop()
+
+        # Desired starting point
+        desired_start = (r - 1, -r)
+
+        # Rotate the ring so it starts there
+        index = ring.index(desired_start)
+        ring = ring[index:] + ring[:index]
+
+        order.extend(ring)
+
+    return order

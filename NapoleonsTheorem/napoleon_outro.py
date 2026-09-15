@@ -1,10 +1,12 @@
 from manim import *
 import numpy as np
 from napoleon_construction import *
-from napoleon_helpers import equilateral_on_side
+from napoleon_helpers import equilateral_on_side, generate_order
 
 class NapoleonOutro(MovingCameraScene):
     def construct(self):
+
+        self.camera.frame.set_width(35)
 
         # Rule of thumb:
         # x in [-7.1, 7.1]
@@ -44,17 +46,13 @@ class NapoleonOutro(MovingCameraScene):
             run_time=1
         )
 
-        self.wait(1)
-
         # Animate construction of equilateral triangles
         self.play(
             FadeIn(construction.EX),
             FadeIn(construction.EY),
             FadeIn(construction.EZ),
-            run_time=3
+            run_time=1
         )
-
-        self.wait(1)
 
         # Set up the basis vectors
         pos_X = X.get_center()
@@ -68,32 +66,79 @@ class NapoleonOutro(MovingCameraScene):
         vector2 = (pos_Y - pos_Z) + (pos_EQZ - pos_Y)
 
         # Tile the plane
-        tiled_group = VGroup()
-        for i in range(-4, 5):
-            for j in range(-4, 5):
+        tiles = {}
+        labels = {}
+
+        for i in range(-6, 7):
+            for j in range(-6, 7):
                 if i == 0 and j == 0:
-                    continue  # Skip the central original construction
+                    # Skip the central original construction
+                    continue
                 
                 offset = i * vector1 + j * vector2
                 
-                sub_X = Dot(pos_X + offset, fill_opacity=0, stroke_opacity=0)
-                sub_Y = Dot(pos_Y + offset, fill_opacity=0, stroke_opacity=0)
-                sub_Z = Dot(pos_Z + offset, fill_opacity=0, stroke_opacity=0)
-                
-                sub_construction = NapoleonConstruction(sub_X, sub_Y, sub_Z, opacity)
-                tiled_group.add(sub_construction.all)
+                sub_X = Dot(
+                    pos_X + offset, 
+                    fill_opacity=0, 
+                    stroke_opacity=0
+                )
 
-        # Fade in the entire tiled plane
+                sub_Y = Dot(
+                    pos_Y + offset, 
+                    fill_opacity=0, 
+                    stroke_opacity=0
+                )
+
+                sub_Z = Dot(
+                    pos_Z + offset, 
+                    fill_opacity=0, 
+                    stroke_opacity=0
+                )
+                
+                sub_construction = NapoleonConstruction(
+                    sub_X, sub_Y, sub_Z, opacity
+                )
+
+                tiles[(i, j)] = sub_construction.all
+
+                center_pos = (
+                    sub_X.get_center()
+                    + sub_Y.get_center()
+                    + sub_Z.get_center()
+                ) / 3
+
+                label = Text(
+                    f"({i}, {j})",
+                    font_size=80,
+                    color=WHITE
+                ).move_to(center_pos)
+
+                box = BackgroundRectangle(
+                    label,
+                    color=BLACK,
+                    fill_opacity=0.8,
+                    buff=0.15
+                )
+
+                labels[(i, j)] = VGroup(
+                    box,
+                    label
+                ).set_z_index(1000)
+
+        order = generate_order(6)
+
+        tile_fade_ins = [
+            FadeIn(tiles[position])
+            for position in order
+        ]
+
+        # Fade in the tiled plane
         self.play(
-            FadeIn(tiled_group, lag_ratio=0.01),
-            run_time=3
+            LaggedStart(
+                *tile_fade_ins,
+                lag_ratio=0.05,
+                run_time=len(order) / 8
+            ),
+            rate_func=linear
         )
         self.wait(1)
-
-        # Zoom out to reveal the full tessellation pattern
-        self.play(
-            self.camera.frame.animate.set_width(26),
-            run_time=3
-        )
-        self.wait(2)
-
