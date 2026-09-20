@@ -1,9 +1,21 @@
 def sum_of_proper_divisors(n: int) -> int:
-    total = 0
+    if n <= 1:
+        return 0
 
-    for i in range(1, n):
+    total = 1
+
+    i = 2
+
+    while i * i <= n:
         if n % i == 0:
             total += i
+
+            paired_divisor = n // i
+
+            if paired_divisor != i:
+                total += paired_divisor
+
+        i += 1
 
     return total
 
