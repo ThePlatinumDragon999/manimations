@@ -31,8 +31,19 @@ def aliquot_sequence(n: int, terms: int) -> list[int]:
 
 
 n = int(input("Enter starting number: "))
-terms = int(input("Enter number of terms: "))
 
-sequence = aliquot_sequence(n, terms)
+seen = set()
 
-print(sequence)
+# Keep calculating terms in a number's aliquot sequence
+# To stop, CTRL + C in terminal
+while True:
+    # Check if we've encountered this number before
+    if n in seen:
+        print(f"Cycle detected! {n} has appeared before.")
+        break
+
+    # Add the number to our set
+    seen.add(n)
+    
+    print(n)
+    n = sum_of_proper_divisors(n)
