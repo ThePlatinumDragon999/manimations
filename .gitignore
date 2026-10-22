@@ -17,3 +17,7 @@ Thumbs.db
 
 # Personal notes
 manim_notes.txt
+
+# Images
+*.png
+*.jpg

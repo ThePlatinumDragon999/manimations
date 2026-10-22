@@ -39,7 +39,6 @@ def fit_population(data):
 
 data = [
     # (year, population)
-    # First two are from Google, not the original source
     (0, 100_000_000),
     (1000, 200_000_000),
     (1650, 545_000_000),
@@ -52,7 +51,7 @@ data = [
     (1845, 1_009_000_000),
     (1850, 1_171_000_000),
     (1850, 1_094_000_000),
-    (1850, 1_098_000_000),  # also sketch for same reason above
+    (1850, 1_098_000_000),  # This is also sketch for same reason above (source 21)
     (1874, 1_391_000_000),
     (1886, 1_483_000_000),
     (1900, 1_550_000_000),
