@@ -4,19 +4,31 @@ from matplotlib.colors import LinearSegmentedColormap
 from multiprocessing import Pool, cpu_count
 
 # Check if (v, f1, f2) form a vampire number
+# A vampire number is a number v that can be written as the product of
+# two numbers called "fangs", f1 and f2, satisfying some conditions:
+#   - v = f1 * f2
+#   - v has an even number of digits, say 2n
+#   - Each fang has exactly n digits
+#   - The fangs' digits, taken together, are exactly the digits of v, inclusing multiplicity
+#   - The fangs cannot both end in 0
+#   - For example, 1260 = 21 * 60
 def is_vampire(v, f1, f2):
     s_v = str(v)
+    # Vampires have to be even
     if len(s_v) % 2 != 0:
         return False
 
     n = len(s_v) // 2
 
+    # Make sure that each fang is n digits long
     if not (10**(n-1) <= f1 < 10**n and 10**(n-1) <= f2 < 10**n):
         return False
 
+    # Make sure that both fangs do not end in 0
     if f1 % 10 == 0 and f2 % 10 == 0:
         return False
 
+    # Checks to see if the fangs multiply to 0 and the digits of the fangs rearrange to the digits of v
     return (f1 * f2 == v) and (sorted(str(f1) + str(f2)) == sorted(s_v))
 
 
