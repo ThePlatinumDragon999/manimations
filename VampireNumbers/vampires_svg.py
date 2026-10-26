@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 from multiprocessing import Pool, cpu_count
+import matplotlib.colors as mcolors
 
 # Check if (v, f1, f2) form a vampire number
 # A vampire number is a number v that can be written as the product of
@@ -113,15 +114,44 @@ def generate_vampire_image(
         [background_color, highlight_min, highlight_max]
     )
 
-    # Create the image (no axes, high-quality render)
-    fig, ax = plt.subplots(figsize=(8, 8), dpi=dpi)
-    ax.imshow(norm_grid, cmap=cmap, origin="lower", interpolation="nearest")
-    ax.axis("off")
+    
+    # Generate a vector SVG from the density grid.
+    # Each nonzero grid cell becomes a colored rectangle.
+    height, width = norm_grid.shape
 
-    plt.tight_layout(pad=0)
-    plt.savefig(output_path, bbox_inches="tight", pad_inches=0)
-    plt.close(fig)
-    print(f"Vampire density image saved to {output_path}")
+    with open(output_path, "w", encoding="utf-8") as svg:
+        svg.write(
+            f'<svg xmlns="http://www.w3.org/2000/svg" '
+            f'width="{width}" height="{height}" '
+            f'viewBox="0 0 {width} {height}">\n'
+        )
+
+        # Black background
+        svg.write(
+            f'<rect width="{width}" height="{height}" '
+            f'fill="{background_color}"/>\n'
+        )
+
+        # Flip vertically so the origin is in the lower-left.
+        svg.write(
+            f'<g transform="translate(0 {height}) scale(1 -1)">\n'
+        )
+
+        # Only draw occupied cells.
+        ys, xs = np.nonzero(grid)
+
+        for y, x in zip(ys, xs):
+            color = mcolors.to_hex(cmap(norm_grid[y, x]))
+
+            svg.write(
+                f'<rect x="{x}" y="{y}" '
+                f'width="1" height="1" '
+                f'fill="{color}"/>\n'
+            )
+
+        svg.write('</g>\n</svg>\n')
+
+    print(f"Vampire density SVG saved to {output_path}")
 
 # Example usage
 if __name__ == "__main__":
@@ -135,6 +165,6 @@ if __name__ == "__main__":
         background_color="#000000",
         highlight_min="#aaaaaa",
         highlight_max="#ffffff",
-        output_path=f"vampire_density_6_lim{limit}_scale{scale}.png",
+        output_path=f"vampire_density_7_lim{limit}_scale{scale}.svg",
         dpi=600
     )
