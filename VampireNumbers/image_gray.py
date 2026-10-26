@@ -12,5 +12,4 @@ def grayscale_image(input_path, output_path):
     print(f"Grayscale image saved as {output_path}")
 
 # Example usage:
-# Replace these with your own file paths
 grayscale_image("vampire_density_red.png", "vampire_density_white_small.png")

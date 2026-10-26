@@ -24,4 +24,4 @@ def to_black_and_white(input_path, output_path):
     print(f"Saved to {output_path}")
 
 # Example usage:
-to_black_and_white("vampire_density_6_lim100000_scale50.png", "vampire_density_6_full_lim100000_scale50.png")
+to_black_and_white("graphs/vampire_density_7_lim100000_scale50.png", "vampire_density_6_full_lim100000_scale50.png")
