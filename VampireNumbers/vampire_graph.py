@@ -1,159 +1,102 @@
 from manim import *
 
 
-class VampireZoom(MovingCameraScene):
+class VampireZoom(Scene):
     def construct(self):
         # Configuration
         max_limit = 100_000
         start_limit = 10_000
+        tick_step = 10_000
 
         image_path = "graphs/vampire_density_7_lim10000_scale50.svg"
         new_image_path = "graphs/vampire_density_7_full_lim10000_scale50.svg"
-        graph_size = 12
+        graph_size = 6.5
+        fade_zone = 0.4  # new ticks fade in over this distance at the axis end
 
-        # Axes
+        # Reference axes, only used for positioning (origin / center)
         axes = Axes(
-            x_range=[0, max_limit, 10_000],
-            y_range=[0, max_limit, 10_000],
+            x_range=[0, max_limit, tick_step],
+            y_range=[0, max_limit, tick_step],
             x_length=graph_size,
             y_length=graph_size,
-            axis_config={
-                "color": WHITE,
-                "stroke_width": 2,
-                "include_ticks": True,
-                "include_numbers": True,
-                "font_size": 20,
-            },
             tips=False,
         )
+        origin = axes.c2p(0, 0)
 
-        # Initial Axes (0 to 10k range with 1k ticks)
-        axes_small = Axes(
-            x_range=[0, start_limit, 1_000],
-            y_range=[0, start_limit, 1_000],
-            x_length=graph_size,
-            y_length=graph_size,
-            axis_config={
-                "color": WHITE,
-                "stroke_width": 2,
-                "include_ticks": True,
-                "include_numbers": True,
-                "font_size": 20,
-            },
-            tips=False,
-        )
+        # Static axis lines (never change, so stroke width stays constant)
+        x_line = Line(origin, origin + RIGHT * graph_size, color=WHITE, stroke_width=2)
+        y_line = Line(origin, origin + UP * graph_size, color=WHITE, stroke_width=2)
 
-        # Labels brought closer using a smaller buff (0.15)
-        x_label_small = Text(
-            "Fang 1", font_size=30, font="OpenDyslexic", color="#B00B69"
-        )
-        x_label_small.next_to(axes_small.x_axis, DOWN, buff=0.15)
+        # Axis labels
+        x_label = Text("Fang 1", font_size=30, font="OpenDyslexic", color="#B00B69")
+        x_label.next_to(x_line, DOWN, buff=0.15)
+        y_label = Text("Fang 2", font_size=30, font="OpenDyslexic", color="#B00B69")
+        y_label.rotate(90 * DEGREES)
+        y_label.next_to(y_line, LEFT, buff=0.15)
 
-        y_label_small = Text(
-            "Fang 2", font_size=30, font="OpenDyslexic", color="#B00B69"
-        )
-        y_label_small.rotate(90 * DEGREES)
-        y_label_small.next_to(axes_small.y_axis, LEFT, buff=0.15)
+        # Zoom tracker: 1.0 = start view (0-10k), 0.1 = end view (0-100k)
+        zoom = ValueTracker(1.0)
 
-        group_small = VGroup(axes_small, x_label_small, y_label_small)
+        def make_ticks():
+            s = zoom.get_value()
+            ticks = VGroup()
+            for v in range(0, max_limit + 1, tick_step):
+                pos = v / start_limit * graph_size * s
+                if pos > graph_size + 1e-6:
+                    continue  # still off the end of the axis
+                # fade in as it enters at the end of the axis
+                opacity = min(1.0, (graph_size - pos) / fade_zone + 1e-6)
+                opacity = max(0.0, opacity)
 
-        # Final Axes (0 to 100k range with 10k ticks)
-        axes_large = Axes(
-            x_range=[0, max_limit, 10_000],
-            y_range=[0, max_limit, 10_000],
-            x_length=graph_size,
-            y_length=graph_size,
-            axis_config={
-                "color": WHITE,
-                "stroke_width": 2,
-                "include_ticks": True,
-                "include_numbers": True,
-                "font_size": 20,
-            },
-            tips=False,
-        )
+                label_text = "0" if v == 0 else f"{v // 1000}k"
 
-        x_label_large = Text(
-            "Fang 1", font_size=30, font="OpenDyslexic", color="#B00B69"
-        )
-        x_label_large.next_to(axes_large.x_axis, DOWN, buff=0.15)
+                # x-axis tick + number
+                x_pt = origin + RIGHT * pos
+                x_tick = Line(x_pt + DOWN * 0.07, x_pt + UP * 0.07, stroke_width=2, color=WHITE)
+                x_num = Text(label_text, font_size=20).next_to(x_tick, DOWN, buff=0.08)
 
-        y_label_large = Text(
-            "Fang 2", font_size=30, font="OpenDyslexic", color="#B00B69"
-        )
-        y_label_large.rotate(90 * DEGREES)
-        y_label_large.next_to(axes_large.y_axis, LEFT, buff=0.15)
+                # y-axis tick + number
+                y_pt = origin + UP * pos
+                y_tick = Line(y_pt + LEFT * 0.07, y_pt + RIGHT * 0.07, stroke_width=2, color=WHITE)
+                y_num = Text(label_text, font_size=20).next_to(y_tick, LEFT, buff=0.08)
 
-        group_large = VGroup(axes_large, x_label_large, y_label_large)
-        group_large.set_opacity(0)  # Start hidden
+                group = VGroup(x_tick, x_num, y_tick, y_num)
+                group.set_opacity(opacity)
+                ticks.add(group)
+            return ticks
+
+        ticks = always_redraw(make_ticks)
 
         # Density image
         density = SVGMobject(image_path)
-
-        density.stretch_to_fit_width(graph_size)
-        density.stretch_to_fit_height(graph_size)
-
-        # Center the image on the axes' coordinate square.
+        density.set_width(graph_size)
         density.move_to((axes.c2p(0, 0) + axes.c2p(max_limit, max_limit)) / 2)
-
-        # Start with the image invisible.
         density.set_opacity(0)
-
-        # Add density image to the regular scene (so it scales/moves)
         self.add(density)
 
-        # Lock the axes group to the camera frame so they stay fixed on screen
-        self.camera.frame.add(group_small, group_large)
-        # Also add them to the scene so they render
-        self.add(group_small, group_large)
-
-        # The origin is in the lower left corner of the graph.
-        origin = axes.c2p(0, 0)
-
-        self.play(FadeIn(group_small), run_time=1)
+        self.add(ticks)  # always_redraw mobject: add so it updates
+        self.play(FadeIn(VGroup(x_line, y_line, x_label, y_label)), run_time=1)
         self.wait(0.5)
 
-        # Then fade in the density image.
-        self.play(
-            density.animate.set_opacity(1),
-            run_time=1.5,
-            rate_func=smooth,
-        )
-
+        self.play(density.animate.set_opacity(1), run_time=1.5, rate_func=smooth)
         self.wait(1)
 
-        # Zoom out (scale down) while cross-fading the small grid into the large grid
+        # Zoom out: image shrinks and tick positions follow the same scale
         self.play(
             density.animate.scale(0.1, about_point=origin),
-            group_small.animate.set_opacity(0),
-            group_large.animate.set_opacity(1),
+            zoom.animate.set_value(0.1),
             run_time=8,
             rate_func=smooth,
         )
-
         self.wait(2)
 
         # Replace density image
         new_density = SVGMobject(new_image_path)
-        new_density.stretch_to_fit_width(graph_size)
-        new_density.stretch_to_fit_height(graph_size)
-
-        # Match the position and scale of the original image.
-        new_density.move_to(
-            (axes.c2p(0, 0) + axes.c2p(max_limit, max_limit)) / 2
-        )
-
-        # Apply the exact same zoom transformation about the origin
+        new_density.set_width(graph_size)
+        new_density.move_to((axes.c2p(0, 0) + axes.c2p(max_limit, max_limit)) / 2)
         new_density.scale(0.1, about_point=origin)
-
-        # Start invisible, then fade in over the original.
         new_density.set_opacity(0)
         self.add(new_density)
 
-        self.play(
-            new_density.animate.set_opacity(1),
-            run_time=2,
-            rate_func=smooth,
-        )
-
+        self.play(new_density.animate.set_opacity(1), run_time=2, rate_func=smooth)
         self.wait(2)
