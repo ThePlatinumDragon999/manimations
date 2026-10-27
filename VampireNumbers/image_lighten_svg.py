@@ -2,7 +2,7 @@
 import re
 import xml.etree.ElementTree as ET
 
-def to_gray_and_white(input_path, output_path):
+def to_gray_and_white(input_path, output_path, min_gray=64):
     tree = ET.parse(input_path)
     root = tree.getroot()
 
@@ -40,9 +40,9 @@ def to_gray_and_white(input_path, output_path):
         if (r, g, b) == (0, 0, 0):
             return "#000000"
 
-        # Convert brightness to the range 128–255
+        # Convert brightness to the range min_gray–255
         brightness = (r + g + b) / 3
-        gray = int(128 + brightness / 255 * 127)
+        gray = int(min_gray + brightness / 255 * 127)
 
         return f"#{gray:02x}{gray:02x}{gray:02x}"
 
@@ -79,5 +79,5 @@ def to_gray_and_white(input_path, output_path):
 # Example usage
 to_gray_and_white(
     "graphs/vampire_density_7_lim100000_scale50.svg",
-    "graphs/vampire_density_half_lim100000_scale50.svg"
+    "graphs/vampire_density_7_g64_lim100000_scale50.svg"
 )

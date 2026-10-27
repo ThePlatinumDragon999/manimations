@@ -1,14 +1,14 @@
 from manim import *
 
 
-class VampireZoom3(Scene):
+class VampireZoom4(Scene):
     def construct(self):
         # Configuration
         max_limit = 100_000
         start_limit = 10_000
         tick_step = 10_000
 
-        image_path = "graphs/vampire_density_7 half_lim100000_scale50.svg"
+        image_path = "graphs/vampire_density_7_g64_lim100000_scale50.svg"
         new_image_path = "graphs/vampire_density_7_full_lim100000_scale50.svg"
         graph_size = 5.5
         graph_shift = UP * 0.6   # move the whole graph up
@@ -111,19 +111,22 @@ class VampireZoom3(Scene):
             tick_fade.animate.set_value(1.0),
             run_time=1
         )
+
         self.wait(0.5)
 
         self.play(density.animate.set_opacity(1), run_time=1.5, rate_func=smooth)
-        self.wait(1)
+
+        self.wait(2)
 
         # Zoom out: image shrinks and tick positions follow the same scale
         self.play(
             density.animate.scale(0.1, about_point=origin),
             zoom.animate.set_value(0.1),
-            run_time=8,
+            run_time=18,
             rate_func=smooth,
         )
-        self.wait(2)
+
+        self.wait(6)
 
         # Replace density image
         new_density = SVGMobject(new_image_path)
@@ -133,4 +136,4 @@ class VampireZoom3(Scene):
         self.add(new_density)
 
         self.play(new_density.animate.set_opacity(1), run_time=2, rate_func=smooth)
-        self.wait(2)
+        self.wait(4)
