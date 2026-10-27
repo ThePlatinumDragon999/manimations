@@ -1,14 +1,14 @@
 from manim import *
 
 
-class VampireZoom2(Scene):
+class VampireZoom3(Scene):
     def construct(self):
         # Configuration
         max_limit = 100_000
         start_limit = 10_000
         tick_step = 10_000
 
-        image_path = "graphs/vampire_density_7_lim100000_scale50.svg"
+        image_path = "graphs/vampire_density_7 half_lim100000_scale50.svg"
         new_image_path = "graphs/vampire_density_7_full_lim100000_scale50.svg"
         graph_size = 5.5
         graph_shift = UP * 0.6   # move the whole graph up
@@ -38,6 +38,9 @@ class VampireZoom2(Scene):
         y_label = Text("Fang 2", font_size=30, font="OpenDyslexic", color="#B00B69")
         y_label.rotate(90 * DEGREES)
         y_label.next_to(y_line, LEFT, buff=y_title_buff)
+
+        for m in (x_line, y_line, x_label, y_label):
+            m.set_z_index(3)
 
         # Zoom tracker: 1.0 = start view (0-10k), 0.1 = end view (0-100k)
         zoom = ValueTracker(1.0)
@@ -78,14 +81,27 @@ class VampireZoom2(Scene):
                 group = VGroup(x_tick, x_num, y_tick, y_num)
                 group.set_opacity(opacity)
                 ticks.add(group)
+            ticks.set_z_index(3)
             return ticks
 
         ticks = always_redraw(make_ticks)
+
+        # Mask
+        mask_kwargs = dict(fill_color=config.background_color, fill_opacity=1, stroke_width=0)
+        big = 50
+        right_mask = Rectangle(width=big, height=big * 2, **mask_kwargs)
+        right_mask.move_to(origin + RIGHT * graph_size, aligned_edge=LEFT)
+        top_mask = Rectangle(width=big * 2, height=big, **mask_kwargs)
+        top_mask.move_to(origin + UP * graph_size, aligned_edge=DOWN)
+        right_mask.set_z_index(2)
+        top_mask.set_z_index(2)
+        self.add(right_mask, top_mask)
 
         # Density image
         density = SVGMobject(image_path)
         density.set_width(graph_size)
         density.move_to((axes.c2p(0, 0) + axes.c2p(max_limit, max_limit)) / 2)
+        density.scale(10, about_point=origin) 
         density.set_opacity(0)
         self.add(density)
 
@@ -113,7 +129,6 @@ class VampireZoom2(Scene):
         new_density = SVGMobject(new_image_path)
         new_density.set_width(graph_size)
         new_density.move_to((axes.c2p(0, 0) + axes.c2p(max_limit, max_limit)) / 2)
-        new_density.scale(0.1, about_point=origin)
         new_density.set_opacity(0)
         self.add(new_density)
 
