@@ -1,0 +1,139 @@
+Population estimates from sources from the 1960 paper
+"Doomsday: Friday, 13 November, A.D. 2026"
+
+10. From Encyclopedia Americana (Americana Corp.,
+New York, 1955), vol. 22, p. 367:
+
+    World population in millions:
+    1650 - 470 million
+    1750 - 694 million
+    1800 - 919 million
+    1850 - 1,091 million
+    1900 - 1,571 million
+    1935 - 1,995 million
+    1947 - 2,317 million
+
+11. H. Hansen, Ed., The World Almanac and
+Book of Facts (New York World-Telegram
+Corp., 1960), pp. 257, 265.
+
+    1958 - 2,852 million
+
+14. H. B. Mills, Jr., Trans. Illinois State Acad.
+Sci. 52, 5 (1959).
+
+    World population in millions
+    0 - 100 million
+    1000 - 200 million
+    1650 - 545 million
+    1750 - 728 million
+    1800 - 906 million
+    1850 - 1,171 million
+    1900 - 1,608 million
+    1920 - 1,834 million
+    1930 - 2,070 million
+    1940 - 2,295 million
+    1950 - 2,517 million
+    1960 - 3,005 million
+
+
+20. Population Bulletin No. I (United Nations,
+New York, 1951), pp. 1-3.
+
+    World population in millions
+    1650 - 470 million
+    1750 - 694 million
+    1850 - 1,094 million
+    1900 - 1,550 million
+    1920 - 1,834 million
+    1950 - 2,406 million
+
+21. A. M. Carr-Saunders, in World Population
+(Oxford Univ. Press, New York, 1937),
+pp. 30, 42.
+
+    Managed to find the 1936 edition instead of 1937. I don't know if that changes anything
+    World populuation in millions
+    1650 - 465 million
+    1750 - 660 million
+    1800 - 836 million
+    1850 - 1,098 million
+    1900 - 1,551 million
+    1929 - 1,820 million
+    1933 - 2,057 million
+
+    Revised estimates
+    1650 - 545 million
+    1750 - 728 million
+    1800 - 906 million
+    1850 - 1,171 million
+    1900 - 1,608 million
+    1933 - 2,057 million
+
+22. W. F. Willcox, in Studies in American
+Demography (Cornell Univ. Press, Ithaca,
+New York, 1940), p. 43.
+
+    World population in millions
+    1800 - 919 million
+    1850 - 1,091 million
+
+23. C. T. Lewis, Ed., Harpers Book of Facts
+(1906).
+
+    World population in millions
+    1810 - 682 million
+    1828 - 847 million
+    1845 - 1,009 million
+    1874 - 1,391 million
+    1886 - 1,483 million
+    1891  - 1,479 million
+
+24. Statistical Yearbook, 1940-41 (League of
+Nations, Geneva, 1941), p. 18.
+
+    World population in millions
+    1939 - 2,170 million
+
+25. Encyclopaedia Britannica (Encyclopaedia
+Britannica, Chicago, 1959), vol. 18, p. 232.
+
+    Can't find this source
+
+26. H. Hansen, Ed., The World Almanac and
+Book of Facts (New York World-Telegram
+Corp., 1958), p. 265.
+
+    Can't find this source
+
+-------------------------
+Numbers used for curve fitting according to paper:
+
+    0 (14) - 100 million
+    1000 (14) - 200 million
+    1650 (14) - 545 million
+    1750 (20) - 694 million
+    1800 (14) - 906 million
+    1800 (21) - 906 million (this one is a bit fuzzy)
+    1800 (22) - 919 million
+    1810 (23) - 682 million
+    1828 (23) - 847 million
+    1845 (23) - 1,009 million
+    1850 (14) - 1,171 million
+    1850 (21) - 1,098 million (also a guess)
+    1850 (20) - 1,094 million
+    1874 (23) - 1,391 million
+    1886 (23) - 1,483 million
+    1900 (20) - 1,550 million
+    1920 (20) - 1,834 million
+    1935 (10) - 1,995 million
+    1939 (24) - 2,170 million
+    1950 (14) - 2,517 million
+    1950 (20) - 2,406 million
+
+
+
+
+
+
+
