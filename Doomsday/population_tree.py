@@ -205,28 +205,61 @@ class PopulationTree(MovingCameraScene):
         # Row i of A and row i of together are segment i.
         def pt_to_segs(p, A, B):
             AB = B - A
-            # This is Einstein summation
+
             # We consider two vectors, p - A[i], and B[i] - A[i]
+            # np.einsum is Einstein summation, which is essentially row-by-row dot products.
             t = np.clip(np.einsum("ij,ij->i", p - A, AB) / np.einsum("ij,ij->i", AB, AB), 0, 1)
             return np.linalg.norm(p - (A + t[:, None] * AB), axis=1)
 
+        # This function determines if a spot for a new cat is acceptable (aka isn't too close to another cat or
+        # an existing line segment)
+        # c is the candidate position, pp is the parent's position, parent_id is the parent's glboal number,
+        # and strict says whether to apply the line-clearance preference.
         def spot_ok(c, pp, parent_id, strict):
+            # Candidate must be in the left half but not too far out.
+            # Keeping x <= -min_dist/2 means a cat and its mirror are at leat min_dist apart
             if c[0] > -min_dist / 2 or c[0] < -half_x:
                 return False
+
+            # This is a hard rule. If any placed cat (from both halves) is within min_dist, reject the cat.
+            # Because both halves are in Q, the left side automatically respects what the right side holds.
             n = cnt[0]
             pts = Q[:n]
             if (np.linalg.norm(pts - c, axis=1) < min_dist).any():
                 # cats never overlap (hard rule)
                 return False
-            # line clearance is only a preference
+            
+            # strict is a switch thast decides whether spot_ok checks line clearance in addition to the overlap
+            # rule above
+
+            # A cat that can't be placed is worse than a cat near a line. The animation is about a population
+            # that doubles each generation. If a cat can't find a spot, place_gen ends that branch, and all of its
+            # descendants canish with it. The tree no longer doubles, which defeats the purpose.
+
+            # Line clearance is the pickier requirement. As the tree fills, the space gets crowded with lines as 
+            # well as cats. Demanding clearance from all of them means fewer spots qualify, so the search would have
+            # to go further out and eventually give up. Dropping the requirement at a certain point
+            # trades a small aesthetic compromise for keeping the cat.
+
+            # If a line goes through a cat, it will be removed later.
             if strict:
+                # keep masks out the parent, since a line starts at its parent and would be distance 0 from it.
                 keep = Qid[:n] != parent_id
+
+                # Rejects the spot if any other cat is within line_clear of the new line
                 if (pts_to_seg(pts[keep], pp, c) < line_clear).any():
                     return False
+
+                # Rejects if the new cat is within line clear of any existing line.
+                # QA[1:n] and Q[1:n] are all existing lines, and row 0 (the root, with no line) is skipped,
+                # which also avoids a divide by 0 from a zero-length segment.
+                # n ? 1 avoids an empty slice
                 if n > 1 and (pt_to_segs(c, QA[1:n], Q[1:n]) < line_clear).any():
                     return False
             return True
 
+        # This records the cat in both storages (the indexed P / D) and the packed (Q / A / Qid),
+        # the moves cnt on
         def add_node(j, pos, pos_parent, direction):
             P[j] = pos
             D[j] = direction
@@ -235,46 +268,83 @@ class PopulationTree(MovingCameraScene):
             Qid[cnt[0]] = j
             cnt[0] += 1
 
+        # A count of branches that found no room
         skipped = [0]
 
+        # This places one generation
         def place_gen(g):
+            # n is the number of cats in this generation.
             n = 2 ** g
+
+            # spread is the peferred angle between a child's dirction and its parent's: 78 degrees for
+            # generation 1, then *0.75 per generation.
             spread = np.radians(first_spread) * spread_decay ** (g - 1)
-            # left half; random order is fairer
+            # This loops over the left-half indices in random order.
+            # If it went left to right, the leftmost cats would always get first pick of the space and
+            # the rest would be squeezed.
             for i in rng.permutation(n // 2):
+                # Local index i has its parent at local index i // 2 in the previous generation.
+                # This reads the parent's position and direction. If the parent was never placed, this cat
+                # can't be either, so it is skipped.
                 pg = gidx(g - 1, i // 2)
                 pp, pdir = P[pg], D[pg]
-                # parent was never placed, so neither is this cat
                 if np.isnan(pp[0]):
                     continue
+
+                # Each parent has two children. Even i is the left child, which turns by -spread toward the 
+                # left (angles near 180°). Odd i is the right child, which turns by +spread toward the right
+                # (angles near 0°)
                 sign = -1.0 if i % 2 == 0 else 1.0
-                # how far below the root the parent is
+
+                # pp_q is how far below the root the parent is (y is negative below the root, so this is positive)
                 pp_q = -pp[1]
+
+                # r is the starting search radius
                 r = edge_min
+
+                # c is the chosen position, which stays None until one is accepted
                 c = None
+
                 while c is None:
-                    # no candidate can be above y_limit once even the flattest direction is below it
+                    # This keeps trying larger radii until success, or until failure is certain.
+                    # The second condition checks whether even the flatted allowed direction is already
+                    # below anything the camera ever shows. The flattest direction is 0.1 radians below horizonal,
+                    # and sin(0.1) ≈ 0.0998, so the shallowest reachable depth is pp_q + 0.0998 r. If that exceeds
+                    # y_limit, nothing at this radius or larger can be visible.
                     if r > r_cap or pp_q + 0.0998 * r > y_limit:
                         break
+
+                    # Twenty random tries per radius.
                     for _ in range(20):
                         if r > edge_min + 3 * edge_step:
-                            # crowded: any downward direction
+                            # This is crowded, so any downward direction works
                             a = rng.uniform(-PI + 0.1, -0.1)
                         else:
+                            # Not crowded: Pick the paren't direction, plus or minus the spread, with ±30% jitter.
+                            # It is clipped to the downard range, so no cat is ever above its parent
                             a = pdir + sign * spread * (1 + spread_jitter * rng.uniform(-1, 1))
                             a = float(np.clip(a, -PI + 0.1, -0.1))
+
+                        # This is a random distance between r and r + edge_step. The candidate is the parent plus
+                        # rr in direction a
                         rr = r + rng.uniform(0, edge_step)
                         c_try = pp + rr * np.array([np.cos(a), np.sin(a)])
-                        # below anything the camera shows
+
+                        # This is below anything the camera shows, so skip the candidate
                         if -c_try[1] > y_limit:
                             continue
+
+                        # Line clearance is demanded only while the radius is below edge_min + 8 * edge_step
+                        # (about 2.0). If the position is acceptable, it is kept along with the angle a_ok,
+                        # and the for loop ends. The while condition "c is None" then ends too.
                         strict = r < edge_min + 8 * edge_step
                         if spot_ok(c_try, pp, pg, strict):
                             c, a_ok = c_try, a
                             break
                     if c is None:
                         r += edge_step if r < edge_min + 8 * edge_step else 0.15 * r
-                # no room: end this branch here
+                
+                # There is no room; end this branch here
                 if c is None:
                     skipped[0] += 1
                     continue
