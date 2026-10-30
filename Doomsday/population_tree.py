@@ -341,53 +341,118 @@ class PopulationTree(MovingCameraScene):
                         if spot_ok(c_try, pp, pg, strict):
                             c, a_ok = c_try, a
                             break
+                    
+                    # All 20 tries failed, so widen the search.
+                    # While still strict, r grows by 0.12 each round. After that it grows by 15% each round
                     if c is None:
                         r += edge_step if r < edge_min + 8 * edge_step else 0.15 * r
-                
-                # There is no room; end this branch here
+
+                # If nothing was found, the branch eneds here. The cat is never placed, so its children will
+                # see a NaN parent and skip too.
                 if c is None:
                     skipped[0] += 1
                     continue
+
+                # j is the cat's global number and its mirror number jm (local index n-1-i). The cat is added with
+                # its parent's position and direction.
                 j, jm = gidx(g, i), gidx(g, n - 1 - i)
                 add_node(j, c, pp, a_ok)
+
+                # This is code for placing the mirror twin. Its parent is the mirror of the original parent, found
+                # with the same arithmetic on the mirror index. Position is (-x, y). Direction is -PI - a_ok, which
+                # is the reflection of the angle across the vertical axis.
                 pm = P[gidx(g - 1, (n - 1 - i) // 2)]
                 add_node(jm, np.array([-c[0], c[1]]), pm, -PI - a_ok)
+
+            # Marks the generation as complete.
             built[0] = g
 
+        # Makes sure that generations up to g exist, and never beyond G_cap. It lays out generations one at a time,
+        # in order, because each one needs its parent's positions. It is called from the timeline loop later in
+        # construct, so generations are built only as the visibility test asks for them.
         def ensure(g):
             g = min(g, G_cap)
             while built[0] < g:
                 place_gen(built[0] + 1)
 
-        # Timeline
+        # This next of block controls the timeline
+        # It has five jobs: 
+        # - work out how long the animation is
+        # - find out which cats are ever visible
+        # - choose the lines you actually see
+        # - build the Manim objects
+        # - run the animation
+
+        # d_exit is the depth at which the root has scrolled off the top. The camera center c_of(d) is measured
+        # downward. At the final zoom, the top of the view is zoom_end * H/ 2 above the camera center, and the root
+        # cat's bottom edge is cat_height / 2 below the root.
+        
+        # So the root is fully off-screen once the camera has moved down by zoom_end * H / 2 + cat_height / 2.
+
+        # The loop steps the depth up in 0.01 increments until that is true. It uses the final zoom, but the zoom is
+        # narrower earlier, so the root actually leaves slightly earlier than d_exit. But getting the timing
+        # exactly right is a massive pain, so I've elected to ignore it.
         d_exit = 0.0
         while c_of(d_exit) < zoom_end * H / 2 + cat_height / 2:
             d_exit += 0.01
+
+        # end_depth adds the tail, converted from seconds into depth units (3.0 / 0.7 ≈ 4.3 levels)
         end_depth = d_exit + tail_seconds / seconds_per_level
 
-        # Which nodes are ever on screen (so we only build those)
+        # This determines the nodes that are ever on screen (so we only build those)
+        # ds holds the depths, from -1 (the start) to end_depth
         ds = np.linspace(-1, end_depth, 300)
+
+        # This is the camera's vertical position at each depth
         cs = np.array([c_of(d) for d in ds])
+
+        # This is the zoom at each depth. It interpolates linearly with progress, which is how the final 
+        # play call changes the frame width
         zf = zoom_start + (zoom_end - zoom_start) * (ds + 1) / (end_depth + 1)
+
+        # half_w and half_h are half the visible width and height at each sample, plus a margin of 1 so cats
+        # at th eefge aren't dropped.
         half_w = zf * W / 2 + 1.0
         half_h = zf * H / 2 + 1.0
-        # lowest point the camera ever shows
+
+        # Lowest point the camera ever shows
+        # Slightly generous, since largest camera position and largest half_height don't occur at the same time.
+        # This is the value that place_gen uses to skip positions that won't be seen.
         y_limit = cs.max() + half_h.max()
 
+        # For each generation in turn, make sure it has been laid out. This is where place_gen runs.
+        # vis will hold one boolean array per generation.
         vis = []
         g = 0
         while True:
             ensure(g)
+
+            # ids is the global numbers of every slot in generation g.
             ids = np.arange(gidx(g, 0), gidx(g, 2 ** g))
+
+            # x is each cat's horizontal position and q is how far be;ow the root it sits (positive downward).
+            # Unplaced cats have NaN.
             x, q = P[ids, 0], -P[ids, 1]
-            ok = ds > g - 2                       # born(g, d) > 0
+
+            # Which of the 300 time samples are ones where this generation has non-zero opacity.
+            # From born(), generation g starts to appear at depth g - 2.
+            ok = ds > g - 2
+
+            # This is the core test. Using numpy broadcasting, it builds a table with one row per cat and
+            # one column per time sample. Each cell is True if the cat is horizontally inside the view at that time,
+            # vertically inside the view (its distance from the camera center is at most the half_height), and
+            # its generation is visible at that time.
+            # .any(axis=1) asks whether each row has at least one True, meaning the cat is on screen at some moment.
+            # NaN positions compare as False, so unplaced cats are never seen.
             seen = (
                 (np.abs(x)[:, None] <= half_w[None, :])
                 & (np.abs(q[:, None] - cs[None, :]) <= half_h[None, :])
                 & ok[None, :]
             ).any(axis=1)
+
+            # Stores the result and stops if the generation is completely empty or the cap is reached.
+            # Otherwise, it moves to the next generation.
             vis.append(seen)
-            # nothing placed in this generation: we're done
             if np.isnan(q).all() or g >= G_cap:
                 break
             g += 1
@@ -396,18 +461,34 @@ class PopulationTree(MovingCameraScene):
                 print(f"PopulationTree: {skipped[0]} cats had no room and were skipped")
 
         # Re-parenting: each cat links to the nearest cat above it
-        cat_clear = 0.05    # padding around a cat's box when testing for lines through it
-        min_rise = 0.1      # parent must be at least this much higher on screen
-        max_tries = 12      # how many nearest candidates a cat may try
+        # cat_clear is padding around a cat's box when testing for lines through it
+        cat_clear = 0.05
 
+        # Vectorised Liang-Barsky algorithm: does a line segment intersect with a box.
+        # Segment is a + t*d for t in [0, 1], where d = b - a. A box is an x-range and y-range.
+        # The segment is inside the box when t puts it inside both ranges at once.
         def seg_hits_boxes(a, b, centers, hw, hh):
-            """Vectorised Liang-Barsky: does segment a-b touch each axis-aligned box?"""
             d = b - a
             half = np.array([hw, hh])
+
+            # lo and hi are every box's bottom-left and top-right corners, relative to a, one row per box
             lo = centers - half - a
             hi = centers + half - a
+
+            # The allowed t range starts as the whole segment, [0, 1], for each box.
             t0 = np.zeros(len(centers))
             t1 = np.ones(len(centers))
+
+            # Loop over k handles x (k=0), and then y (k=1):
+            # If d[k] is nearly 0 (the segment is parallel to that axis), t doesn't move along it.
+            # The segment is either always inside that range or never. If the box's range doesn't contain 0 (lo > 0
+            # or hi < 0), the box is missed. Setting t = -1 makes t0 <= t1 false.
+            # Otherwise, lo/d and hi/d are the two t values where the segment enters and leaves that slab, in 
+            # whichever order (hence min/max). The range is narrowed to the overlap: the largest entry becomes t0 and
+            # the smallest exit becomes t1.
+
+            # At the end, t0 <= t1 means a stretch of the segment lies inside both ranges, so it touches the 
+            # box. The function returns one yes/no per box.
             for k in range(2):
                 if abs(d[k]) < 1e-12:
                     outside = (lo[:, k] > 0) | (hi[:, k] < 0)
@@ -418,17 +499,27 @@ class PopulationTree(MovingCameraScene):
                     t1 = np.minimum(t1, np.maximum(ta, tb))
             return t0 <= t1
 
+        # This is the 2d cross product of p->q and p->r. The sign tells you which side of the line p->q the point
+        # r is on: positive for left, negative for right, zero for exactly on the line. The ... indexing makes it
+        # work whether the points are single points or arrays of points.
         def orient(p, q, r):
             return (q[..., 0] - p[..., 0]) * (r[..., 1] - p[..., 1]) \
                  - (q[..., 1] - p[..., 1]) * (r[..., 0] - p[..., 0])
 
+        # Segment a->b against many segments C[i]->D[i]. Two segments cross if each one's endpoints lie on
+        # opposite sides of the other:
+        # - o1 * o2 < 0 means C and D are on opposite sides of line ab.
+        # - o3 * o4 < 0 means a and b are on opposite sides of line CD.
+        # Both conditions must hold. The strict < 0 means touching or sharing an endpoint doesn't count as crossing.
+        # Also, the name D here is a local param and doesn't clash with the layout's D array.
+        # I should really get better at naming things...
         def seg_crosses(a, b, C, D):
             o1, o2 = orient(a, b, C), orient(a, b, D)
             o3, o4 = orient(C, D, a), orient(C, D, b)
             return (o1 * o2 < 0) & (o3 * o4 < 0)
 
+        # Line from cat p to cat c, shortened to the cats' bounding boxes (None if too short).
         def trimmed(p, c):
-            """Line from cat p to cat c, shortened to the cats' bounding boxes (None if too short)."""
             dist = np.linalg.norm(c - p)
             u = (c - p) / dist
             trim = min(cat_w / 2 / (abs(u[0]) + 1e-9),
