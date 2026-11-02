@@ -518,17 +518,26 @@ class PopulationTree(MovingCameraScene):
             o3, o4 = orient(C, D, a), orient(C, D, b)
             return (o1 * o2 < 0) & (o3 * o4 < 0)
 
-        # Line from cat p to cat c, shortened to the cats' bounding boxes (None if too short).
+        # Shortens a line so it runs from edge to edge of the two cats' boxes, not from center to center
         def trimmed(p, c):
             dist = np.linalg.norm(c - p)
+            # Unit direction from p to c
             u = (c - p) / dist
+            # Going from the center of a box in direction u, you exit through the side wall after
+            # half_width / |ux| and through the top or bottom after half_height / |uy|. Whichever is smaller
+            # is the real exit distance. The 1e-9 avoids dividng by 0 for perfectly horizontal or vertical lines.
+            # The 0.04 leaves a small visible gap between the line and the cat.
             trim = min(cat_w / 2 / (abs(u[0]) + 1e-9),
                        cat_height / 2 / (abs(u[1]) + 1e-9)) + 0.04
+            # If less than 0.05 would remain after trimming both ends, the cats are practically touching and there
+            # is no line.
             if dist <= 2 * trim + 0.05:
                 return None
+            # Otherwise, it returns the new start and end points.
             return p + u * trim, c - u * trim
 
-        # every placed cat (drawn or not), with its generation
+        # This gathers the cats by listing every placed cat (drawn or not) with its generation. Unseen cats are
+        # included because they can still block a line or be a parent.
         node_ids, node_gen = [], []
         for g in range(len(vis)):
             for i in range(2 ** g):
@@ -537,21 +546,30 @@ class PopulationTree(MovingCameraScene):
                     node_ids.append(j)
                     node_gen.append(g)
         node_ids, node_gen = np.array(node_ids), np.array(node_gen)
+        # Positions of cats
         pos = P[node_ids]
+        # The count of cats
         n_nodes = len(node_ids)
+        # hw, hh is an initial box side, replaced per pass.
         hw, hh = cat_w / 2 + cat_clear, cat_height / 2 + cat_clear
 
+        # This looks up whther glboal number j was marked visible in vis[g]
         def is_seen(j, g):
             return bool(vis[g][j - (2 ** g - 1)])
 
-        # Work on the left half only (root included) and mirror each chosen line,
-        # so the tree stays symmetric and the two halves never interact.
+        # left is the indices of cats on the left. The root has x = 0, so it isn’t in left. 
+        # It can still be a parent. Every line is chosen on the left and then mirrored, which keeps 
+        # the picture symmetric and means the halves never interact. id2idx converts a global number 
+        # into a position in these arrays.
         left = np.where(pos[:, 0] < 0)[0]
         id2idx = {int(j): t for t, j in enumerate(node_ids)}
 
+        # This stores every accepted line's two endpoints. They are used in the crossing check.
         accA = np.zeros((len(left) + 1, 2))
         accB = np.zeros((len(left) + 1, 2))
+        # This is the count of accepted lines
         n_acc = [0]
+        # This collects drawable Line objects by generation.
         lines_by_gen = {}
 
         def add_line(k, pk, a, b):
