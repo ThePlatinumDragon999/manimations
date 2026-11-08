@@ -37,11 +37,14 @@ def segments_intersect(A, B, C, D):
     # That is too much of a hassle to deal with right now.
     return (ccw(A, C, D) != ccw(B, C, D)) and (ccw(A, B, C) != ccw(A, B, D))
 
-class RandomSVGGraph(Scene):
+class RandomSVGGraph(MovingCameraScene):
     def construct(self):
         # Set random seed for reproducible graph
         random.seed(43)
         np.random.seed(42)
+
+        x_bound = 22
+        y_bound = 12
 
         # distance
         spawn_distance = 2.0
@@ -52,13 +55,13 @@ class RandomSVGGraph(Scene):
 
         node_radius = max(node_template.width, node_template.height) / 2 * 0.9
 
-        num_nodes = 12
+        num_nodes = 100
         positions = []
         for _ in range(num_nodes):
             while True:
                 pos = np.array([
-                    random.uniform(-7, 7),
-                    random.uniform(-3.2, 3.2),
+                    random.uniform(-x_bound, x_bound),
+                    random.uniform(-y_bound, y_bound),
                     0
                 ])
 
@@ -142,12 +145,16 @@ class RandomSVGGraph(Scene):
                 edges.add(edge)
 
         self.play(
-            LaggedStart(
-                *[GrowFromCenter(node) for node in nodes],
-                lag_ratio=0.1
-            ),
+            *[GrowFromCenter(node) for node in nodes],
             run_time=2
         )
 
-        self.play(FadeIn(edges, lag_ratio=0.1), run_time=1.5)
+        self.play(FadeIn(edges), run_time=1.5)
+
+        self.wait(1)
+
+        self.play(
+            self.camera.frame.animate.scale(2.2),
+            run_time=2.5
+        )
         self.wait(1)
