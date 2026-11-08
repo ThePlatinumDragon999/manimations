@@ -55,10 +55,14 @@ class RandomSVGGraph(MovingCameraScene):
 
         node_radius = max(node_template.width, node_template.height) / 2 * 0.9
 
-        num_nodes = 100
+        num_nodes = 300
         positions = []
         for _ in range(num_nodes):
-            while True:
+            attempts = 0
+            max_attempts = 1000
+            placed = False
+
+            while attempts < max_attempts:
                 pos = np.array([
                     random.uniform(-x_bound, x_bound),
                     random.uniform(-y_bound, y_bound),
@@ -67,7 +71,16 @@ class RandomSVGGraph(MovingCameraScene):
 
                 if all(np.linalg.norm(pos - p) > spawn_distance for p in positions):
                     positions.append(pos)
+                    placed = True
                     break
+
+                attempts += 1
+
+            if not placed:
+                print(f"Notice: Stopped adding nodes at {len(positions)} due to spatial density limits.")
+                break
+
+        num_nodes = len(positions)
 
         # Create the node mobjects at the chosen positions
         nodes = VGroup()
