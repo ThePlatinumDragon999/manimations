@@ -134,7 +134,7 @@ class DoomsdayGraph(Scene):
 
         # ---------- Run ----------
         self.wait(0.5)
-        self.play(u.animate.set_value(u1), run_time=12,
+        self.play(u.animate.set_value(u1), run_time=7,
                   rate_func=rate_functions.ease_in_sine)
 
         # Tip is long gone off the top: fade out the readout that followed it
@@ -157,11 +157,8 @@ class DoomsdayGraph(Scene):
         )
 
         self.play(
-            LaggedStart(
                 GrowArrow(arrow),
                 FadeIn(date, shift=UP * 0.2),
-                lag_ratio=0.5,
-            ),
             run_time=1.5,
         )
-        self.wait(3)
+        self.wait(5)
