@@ -109,9 +109,11 @@ class FertilityRate(Scene):
             y_range=[0, 4, 1],
             x_length=11,
             y_length=5,
-            axis_config={"include_numbers": False, "color": GREY_B},
+            axis_config={"include_numbers": False, "color": WHITE, "stroke_width": 5},
             tips=False,
         )
+
+        axes.set_z_index(1)
 
         # Sit the graph just below the title instead of at the bottom edge
         axes.next_to(title, DOWN, buff=0.3)
@@ -146,14 +148,22 @@ class FertilityRate(Scene):
         bars = VGroup()
         for (year, rate), color in zip(data, colors):
             height = axes.c2p(0, rate)[1] - base_y
+            x_center = axes.c2p(year, 0)[0]
+
+            is_first = (year == x_min)
+            width = bar_width / 2 if is_first else bar_width
+
             bar = Rectangle(
-                width=bar_width,
+                width=width,
                 height=height,
                 stroke_width=0,
                 fill_color=color,
                 fill_opacity=1,
             )
-            bar.move_to(axes.c2p(year, 0), aligned_edge=DOWN)
+
+            # Left edge on the axis for the first bar, centered on the year for the rest
+            left_x = x_center if is_first else x_center - width / 2
+            bar.move_to([left_x + width / 2, base_y + height / 2, 0])
             bars.add(bar)
 
         # Animation
