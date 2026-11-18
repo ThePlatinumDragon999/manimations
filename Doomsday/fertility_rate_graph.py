@@ -106,7 +106,7 @@ class FertilityRate(Scene):
         # Axes
         axes = Axes(
             x_range=[x_min, x_max, 10],
-            y_range=[0, 4, 1],
+            y_range=[1.5, 4, 0.5],
             x_length=11,
             y_length=5,
             axis_config={"include_numbers": False, "color": WHITE, "stroke_width": 5},
@@ -124,7 +124,7 @@ class FertilityRate(Scene):
             font_size = 22
         )
         axes.y_axis.add_labels(
-            {y: label(y) for y in range(0, 5)},
+            {y: label(y) for y in [1.5, 2, 2.5, 3, 3.5, 4]},
             font_size = 22
         )
 
@@ -141,7 +141,7 @@ class FertilityRate(Scene):
         unit_x = axes.x_length / (x_max - x_min)
         # small gap between bars
         bar_width = unit_x * 0.9
-        base_y = axes.c2p(0, 0)[1]
+        base_y = axes.c2p(0, 1.5)[1]
 
         colors = color_gradient(["#87FF78", "#9AB5FF"], len(data))
 
