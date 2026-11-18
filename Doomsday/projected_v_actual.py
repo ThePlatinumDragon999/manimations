@@ -131,13 +131,13 @@ class PopulationComparison(Scene):
             for year in range(x_min, x_max + 1, 20)
         ])
         y_labels = VGroup(*[
-            Text(f"{value:,}", font=FONT, font_size=22)
+            Text(str(value // 1000), font=FONT, font_size=22)
             .next_to(axes.c2p(x_min, value), LEFT, buff=0.2)
-            for value in range(y_min, y_max + 1, 2000)
+            for value in range(2000, y_max + 1, 2000)
         ])
 
         # Main title centered above the graph
-        title = Text("Population (millions)", font=FONT, font_size=30)
+        title = Text("Population (billions)", font=FONT, font_size=24)
         title.next_to(axes, UP, buff=0.4)
 
         # Small axis titles, centered along their axes
