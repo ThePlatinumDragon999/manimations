@@ -94,10 +94,10 @@ class PopulationComparison(Scene):
             # (2014, 7339),
             (2015, 7349),
             # (2016, 7513),
-            # (2017, 7599),
-            (2018, 7683),
+            (2017, 7599),
+            # (2018, 7683),
             # (2019, 7764),
-            (2020, 7887),
+            # (2020, 7887),
             # (2021, 7909),
             # (2022, 7975),
             (2023, 8045),
@@ -203,6 +203,44 @@ class PopulationComparison(Scene):
             year_tracker.animate.set_value(sweep_end),
             run_time=sweep_time,
             rate_func=linear,
+        )
+
+        self.wait(3)
+
+        # Section for moving newer population estimates closer to hyperbolic model
+        START_YEAR = 1960
+        # Maximum deviation from the model, in millions
+        DEVIATION = 100
+
+        animations = []
+
+        for (year, population), dot in zip(
+            [(y, p) for y, p in population_data if x_min <= y <= x_max],
+            dots
+        ):
+            if year < START_YEAR:
+                continue
+
+            # Target population from the hyperbolic model
+            target_population = population_model(year)
+
+            # Keep small deviation from curve
+            # Use sine to alternate slightly above and below
+            offset = DEVIATION * np.sin(year * 1.7)
+
+            target = axes.c2p(year, target_population + offset)
+
+            animations.append(
+                dot.animate.move_to(target)
+            )
+
+        self.play(
+            AnimationGroup(
+                *animations,
+                lag_ratio=0.08,
+            ),
+            run_time=3,
+            rate_func=smooth,
         )
 
         self.wait(3)
